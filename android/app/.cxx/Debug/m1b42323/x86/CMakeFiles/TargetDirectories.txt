@@ -1,0 +1,2 @@
+C:/Users/User/Desktop/Devifai/AstroBandhan/astrobandhan-master/android/app/.cxx/Debug/m1b42323/x86/CMakeFiles/edit_cache.dir
+C:/Users/User/Desktop/Devifai/AstroBandhan/astrobandhan-master/android/app/.cxx/Debug/m1b42323/x86/CMakeFiles/rebuild_cache.dir

@@ -1,0 +1,2 @@
+/Users/smtanvirhasanfaysal/dev_suvo/astrobandhan/android/app/.cxx/Debug/6b3mw3n6/x86/CMakeFiles/edit_cache.dir
+/Users/smtanvirhasanfaysal/dev_suvo/astrobandhan/android/app/.cxx/Debug/6b3mw3n6/x86/CMakeFiles/rebuild_cache.dir

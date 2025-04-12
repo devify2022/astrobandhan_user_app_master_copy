@@ -1,0 +1,80 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Core Permissions -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- Required for network access -->
+    <uses-permission android:name="android.permission.CAMERA" /> <!-- For camera access -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
+                     android:maxSdkVersion="32" /> <!-- For gallery/file read access, capped at Android 12 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" /> <!-- For Android 13+ image access -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" /> <!-- For boot-related functionality -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" /> <!-- For notifications on Android 13+ -->
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- For phone state access -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" /> <!-- For audio recording -->
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" /> <!-- For audio settings -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- For Wi-Fi state -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- For network state -->
+    <uses-permission android:name="android.permission.BLUETOOTH" /> <!-- Legacy Bluetooth, see notes below -->
+
+    <!-- Optional: Modern Bluetooth permissions for Android 12+ -->
+    <!-- Uncomment if Bluetooth features are used on newer Android versions -->
+    <!-- <uses-permission android:name="android.permission.BLUETOOTH_SCAN" /> -->
+    <!-- <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" /> -->
+
+    <!-- Features -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" /> <!-- Camera optional -->
+
+    <!-- Queries for specific apps (e.g., payment apps) -->
+    <queries>
+        <package android:name="com.phonepe.app" />
+        <package android:name="com.phonepe.app.preprod" />
+        <package android:name="com.google.android.apps.nbu.paisa.user" />
+        <package android:name="net.one97.paytm" />
+        <package android:name="in.org.npci.upiapp" />
+        <package android:name="in.amazon.mShop.android.shopping" />
+    </queries>
+
+    <!-- Queries for text processing (Flutter-specific) -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
+    <application
+        android:label="Rudraganga: Talk to Astrologer"
+        android:name="${applicationName}"
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true" <!-- Only if HTTP is needed; prefer HTTPS -->
+        android:requestLegacyExternalStorage="true"> <!-- Optional, remove if not needed for Android 10 -->
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:enableOnBackInvokedCallback="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/LaunchTheme"
+            android:configChanges="orientation|screenSize|smallestScreenSize|locale|layoutDirection|fontScale"
+            android:hardwareAccelerated="true"
+            android:windowSoftInputMode="adjustResize">
+            
+            <!-- Theme for Flutter initialization -->
+            <meta-data
+                android:name="io.flutter.embedding.android.NormalTheme"
+                android:resource="@style/NormalTheme" />
+            
+            <!-- Launcher intent -->
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- Flutter embedding metadata -->
+        <meta-data
+            android:name="flutterEmbedding"
+            android:value="2" />
+    </application>
+
+</manifest>

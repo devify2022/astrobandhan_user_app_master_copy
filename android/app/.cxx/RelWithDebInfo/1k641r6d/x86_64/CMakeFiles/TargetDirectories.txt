@@ -1,0 +1,2 @@
+/Users/avl-mobile/Documents/astrobandhan/android/app/.cxx/RelWithDebInfo/1k641r6d/x86_64/CMakeFiles/edit_cache.dir
+/Users/avl-mobile/Documents/astrobandhan/android/app/.cxx/RelWithDebInfo/1k641r6d/x86_64/CMakeFiles/rebuild_cache.dir
