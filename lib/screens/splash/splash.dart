@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     children: [
                       Column(
                         children: [
-                          Text('RUDRAGANGA',
+                          Text('Astro Bandhan',
                               style: interStyle900Black.copyWith(fontSize: 30)),
                           spaceHeight20,
                           Container(
@@ -71,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
                                       style: poppinsStyle500Medium.copyWith(
                                           fontSize: 32)),
                                   Text(
-                                      'Hello Abcd',
+                                      'Connect instantly with real-time astrologers or explore insights from our AI astrologer.',
                                       style: interStyle300Light.copyWith(
                                           fontSize: 16),
                                       textAlign: TextAlign.center),

@@ -1,6 +1,6 @@
-import 'package:astrobandhan/datasource/model/balance_history_model.dart';
+import 'package:astrobandhan/datasource/model/others/balance_history_model.dart';
 import 'package:astrobandhan/datasource/model/base/api_response.dart';
-import 'package:astrobandhan/datasource/model/call_history_model.dart';
+import 'package:astrobandhan/datasource/model/others/call_history_model.dart';
 import 'package:astrobandhan/datasource/repository/balance_repo.dart';
 import 'package:astrobandhan/helper/helper.dart';
 import 'package:astrobandhan/main.dart';

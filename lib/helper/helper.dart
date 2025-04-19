@@ -29,21 +29,35 @@ import 'package:uuid/uuid.dart';
 
 import '../main.dart';
 
-AuthProvider get providerAuth => Provider.of<AuthProvider>(navigatorKey.currentState!.context, listen: false);
+AuthProvider get providerAuth =>
+    Provider.of<AuthProvider>(navigatorKey.currentState!.context,
+        listen: false);
 
-BalanceProvider get providerBalance => Provider.of<BalanceProvider>(navigatorKey.currentState!.context, listen: false);
+BalanceProvider get providerBalance =>
+    Provider.of<BalanceProvider>(navigatorKey.currentState!.context,
+        listen: false);
 
-ThemeProvider get providerTheme => Provider.of<ThemeProvider>(navigatorKey.currentState!.context, listen: false);
+ThemeProvider get providerTheme =>
+    Provider.of<ThemeProvider>(navigatorKey.currentState!.context,
+        listen: false);
 
-LanguageProvider get providerLanguage => Provider.of<LanguageProvider>(navigatorKey.currentState!.context, listen: false);
+LanguageProvider get providerLanguage =>
+    Provider.of<LanguageProvider>(navigatorKey.currentState!.context,
+        listen: false);
 
-LocalizationProvider get providerLocalization => Provider.of<LocalizationProvider>(navigatorKey.currentState!.context, listen: false);
+LocalizationProvider get providerLocalization =>
+    Provider.of<LocalizationProvider>(navigatorKey.currentState!.context,
+        listen: false);
 
-HomeProvider get providerHome => Provider.of<HomeProvider>(navigatorKey.currentState!.context, listen: false);
+HomeProvider get providerHome =>
+    Provider.of<HomeProvider>(navigatorKey.currentState!.context,
+        listen: false);
 AstromallProvider get providerAstromall =>
     Provider.of<AstromallProvider>(navigatorKey.currentState!.context,
         listen: false);
-SettingProvider get providerSetting => Provider.of<SettingProvider>(navigatorKey.currentState!.context, listen: false);
+SettingProvider get providerSetting =>
+    Provider.of<SettingProvider>(navigatorKey.currentState!.context,
+        listen: false);
 
 LoginUserModel get loginUserModel => providerAuth.userModel;
 // UserModel2 userModel2 = providerSetting.userModel2;
@@ -56,21 +70,29 @@ bool get darkThemeStatus => providerTheme.darkTheme;
 //
 // String get userToken => providerAuth.getUserToken();
 
-double get screenHeight => MediaQuery.of(navigatorKey.currentState!.context).size.height;
+double get screenHeight =>
+    MediaQuery.of(navigatorKey.currentState!.context).size.height;
 
-double get screenWeight => MediaQuery.of(navigatorKey.currentState!.context).size.width;
+double get screenWeight =>
+    MediaQuery.of(navigatorKey.currentState!.context).size.width;
 
 Locales localText(List<Locales> locales) {
-  Locales locale =
-      locales.where((element) => element.language.toString().toUpperCase() == providerLocalization.locale.languageCode.toUpperCase()).isNotEmpty
-          ? locales.firstWhere((element) => element.language.toString() == localeLanguage.languageCode.toUpperCase())
-          : locales[0];
+  Locales locale = locales
+          .where((element) =>
+              element.language.toString().toUpperCase() ==
+              providerLocalization.locale.languageCode.toUpperCase())
+          .isNotEmpty
+      ? locales.firstWhere((element) =>
+          element.language.toString() ==
+          localeLanguage.languageCode.toUpperCase())
+      : locales[0];
   // Locales locale = locales.firstWhere((element) => element.language.toString() == localeLanguage.languageCode.toUpperCase());
   return locale;
 }
 
 String localTextConvertToName(List<Locales>? locales, String name) {
-  String nameTitle = locales != null && locales.isNotEmpty ? localText(locales).name! : name;
+  String nameTitle =
+      locales != null && locales.isNotEmpty ? localText(locales).name! : name;
   return nameTitle;
 }
 
@@ -98,7 +120,8 @@ String toTitleCase(String text) {
 Future<File?> downloadFile(String url, String filename) async {
   try {
     HttpClient httpClient = HttpClient();
-    HttpClientRequest httpClientRequest = await httpClient.getUrl(Uri.parse(url));
+    HttpClientRequest httpClientRequest =
+        await httpClient.getUrl(Uri.parse(url));
     var response = await httpClientRequest.close();
     var bytes = await consolidateHttpClientResponseBytes(response);
     String dir = (await getApplicationDocumentsDirectory()).path;
@@ -117,19 +140,27 @@ Future<File?> downloadFile(String url, String filename) async {
 }
 
 showSnackMessage(String message, {duration = 2, bool isError = true}) {
-  ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(SnackBar(
-      content: Text(message, style: const TextStyle(fontSize: 14)),
-      backgroundColor: isError ? Colors.red : kPrimaryColor,
-      duration: Duration(seconds: duration)));
+  ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
+      SnackBar(
+          content: Text(message, style: const TextStyle(fontSize: 14)),
+          backgroundColor: isError ? Colors.red : kPrimaryColor,
+          duration: Duration(seconds: duration)));
 }
 
-showToastMessage(String message, {length = Toast.LENGTH_SHORT, bool isError = true, gravity = ToastGravity.TOP}) {
+showToastMessage(String message,
+    {length = Toast.LENGTH_SHORT,
+    bool isError = true,
+    gravity = ToastGravity.TOP}) {
   Fluttertoast.showToast(
       msg: message,
       toastLength: length,
       gravity: gravity,
       timeInSecForIosWeb: 1,
-      backgroundColor: isError ? Colors.red : kPrimaryColor,
+      backgroundColor: isError
+          ? Colors.red
+          : !isError
+              ? Colors.green
+              : kPrimaryColor,
       textColor: Colors.white,
       fontSize: 16.0);
 }
@@ -146,10 +177,12 @@ Future<void> extractSharedPreferencesData() async {
     List<Map<String, dynamic>> sharedPreferencesData = [];
     for (String key in keys) {
       final value = prefs.get(key);
-      if (key == 'refreshToken' || key == 'deviceId' || key == 'token') sharedPreferencesData.add({key: value});
+      if (key == 'refreshToken' || key == 'deviceId' || key == 'token')
+        sharedPreferencesData.add({key: value});
     }
     // Save the data to a file
-    await saveJsonToFile({'sharedPreferences': sharedPreferencesData}, 'shared_preferences_data');
+    await saveJsonToFile({'sharedPreferences': sharedPreferencesData},
+        'shared_preferences_data');
   } catch (e) {}
 }
 
@@ -177,28 +210,42 @@ Widget _buildSuccessDialogContent(BuildContext context, String message) {
       color: Colors.white, // Dialog background color
       shape: BoxShape.rectangle,
       borderRadius: BorderRadius.circular(20.0),
-      boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10.0, offset: const Offset(0.0, 10.0))],
+      boxShadow: [
+        BoxShadow(
+            color: Colors.black26,
+            blurRadius: 10.0,
+            offset: const Offset(0.0, 10.0))
+      ],
     ),
     child: Column(
       mainAxisSize: MainAxisSize.min, // To make the dialog compact
       children: <Widget>[
         // Success Animation
-        Lottie.asset('assets/animations/success.json', width: 100, height: 100, fit: BoxFit.cover),
+        Lottie.asset('assets/animations/success.json',
+            width: 100, height: 100, fit: BoxFit.cover),
         const SizedBox(height: 15),
         // Success Message
-        Text("Success!", style: TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold, color: Colors.green[700])),
+        Text("Success!",
+            style: TextStyle(
+                fontSize: 22.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.green[700])),
         const SizedBox(height: 10),
         // Optional Additional Message
-        Text(message, textAlign: TextAlign.center, style: TextStyle(fontSize: 16.0, color: Colors.grey[700])),
+        Text(message,
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 16.0, color: Colors.grey[700])),
         const SizedBox(height: 20),
         // Confirmation Button
         Align(
           alignment: Alignment.centerRight,
           child: TextButton(
             onPressed: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => WalletScreen()));
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => WalletScreen()));
             },
-            child: Text("OK", style: TextStyle(color: Colors.blue, fontSize: 16.0)),
+            child: Text("OK",
+                style: TextStyle(color: Colors.blue, fontSize: 16.0)),
           ),
         ),
       ],
@@ -206,7 +253,8 @@ Widget _buildSuccessDialogContent(BuildContext context, String message) {
   );
 }
 
-Future<void> saveJsonToFile(Map<String, dynamic> jsonData, String fileName) async {
+Future<void> saveJsonToFile(
+    Map<String, dynamic> jsonData, String fileName) async {
   try {
     // Get the directory to save the file
     final directory = await getApplicationDocumentsDirectory();
@@ -239,8 +287,10 @@ class Helper {
   }
 
   static toScreen(context, screen) {
-    Navigator.of(context)
-        .push(SwipeablePageRoute(canOnlySwipeFromEdge: true, backGestureDetectionWidth: 10, builder: (BuildContext context) => screen));
+    Navigator.of(context).push(SwipeablePageRoute(
+        canOnlySwipeFromEdge: true,
+        backGestureDetectionWidth: 10,
+        builder: (BuildContext context) => screen));
   }
 
   static void pushRemoveScreen(BuildContext context, Widget screen) {
@@ -255,19 +305,25 @@ class Helper {
   }
 
   static toReplacementScreenSlideRightToLeft(context, screen) {
-    Navigator.of(context)
-        .push(SwipeablePageRoute(canOnlySwipeFromEdge: true, backGestureDetectionWidth: 10, builder: (BuildContext context) => screen));
+    Navigator.of(context).push(SwipeablePageRoute(
+        canOnlySwipeFromEdge: true,
+        backGestureDetectionWidth: 10,
+        builder: (BuildContext context) => screen));
     //  Navigator.pushReplacement(context, SlideRightToLeft(page: screen));
   }
 
   static toReplacementScreenSlideLeftToRight(context, screen) {
-    Navigator.of(context)
-        .push(SwipeablePageRoute(canOnlySwipeFromEdge: true, backGestureDetectionWidth: 10, builder: (BuildContext context) => screen));
+    Navigator.of(context).push(SwipeablePageRoute(
+        canOnlySwipeFromEdge: true,
+        backGestureDetectionWidth: 10,
+        builder: (BuildContext context) => screen));
     //   Navigator.pushReplacement(context, SlideLeftToRight(page: screen));
   }
 
   static circulProggress(context) {
-    const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation(kAccentColor)));
+    const Center(
+        child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation(kAccentColor)));
   }
 
   static showLog(message) {
@@ -275,7 +331,8 @@ class Helper {
   }
 
   static boxDecoration(Color color, double radius) {
-    BoxDecoration(color: color, borderRadius: BorderRadius.all(Radius.circular(radius)));
+    BoxDecoration(
+        color: color, borderRadius: BorderRadius.all(Radius.circular(radius)));
   }
 
   static openCall(String phoneNumber) async {
@@ -291,7 +348,8 @@ class Helper {
   static openMap(double latitude, double longitude) async {
     // final Uri googleUrl = Uri(path: "https://www.google.com/maps/search/?api=1&query=$latitude,$longitude");
 
-    String googleUrl = 'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
+    String googleUrl =
+        'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude';
     if (await launchUrl(Uri.parse(googleUrl))) {
       await canLaunchUrl(Uri.parse(googleUrl));
     } else {
@@ -300,7 +358,8 @@ class Helper {
   }
 
   static openMap2(double lat, double long) async {
-    final String googleMapslocationUrl = "google.navigation:q=$lat,$long&mode=d";
+    final String googleMapslocationUrl =
+        "google.navigation:q=$lat,$long&mode=d";
 
     final String encodedURl = Uri.encodeFull(googleMapslocationUrl);
 
@@ -339,7 +398,8 @@ class Helper {
   static const BACKEND_TOKEN_KEY = 'backend_token';
   static const GOOGLE_ISSUER = 'https://accounts.google.com';
   static const GOOGLE_CLIENT_ID_IOS = '<IOS-CLIENT-ID>';
-  static const GOOGLE_REDIRECT_URI_IOS = 'com.googleusercontent.apps.<IOS-CLIENT-ID>:/oauthredirect';
+  static const GOOGLE_REDIRECT_URI_IOS =
+      'com.googleusercontent.apps.<IOS-CLIENT-ID>:/oauthredirect';
   static const GOOGLE_CLIENT_ID_ANDROID = '<ANDROID-CLIENT-ID>';
   static const GOOGLE_REDIRECT_URI_ANDROID =
       'com.googleusercontent.apps242909337676-1kp349ib3hpbdrlqv8f5ev53emmec3dm.apps.googleusercontent.com:/oauthredirect';
@@ -365,20 +425,38 @@ class Helper {
   utcConverter(String dateUtc) {
     var date = DateTime.tryParse(dateUtc)?.toLocal();
 
-    const List<String> months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const List<String> months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ];
 
     String amPm = date!.hour >= 12 ? "pm" : "am";
     int hour = date.hour % 12 == 0 ? 12 : date.hour % 12;
 
-    String formattedDate = "${date.day}th ${months[date.month - 1]} ${date.year}, $hour.${date.minute.toString().padLeft(2, '0')}$amPm";
+    String formattedDate =
+        "${date.day}th ${months[date.month - 1]} ${date.year}, $hour.${date.minute.toString().padLeft(2, '0')}$amPm";
     return formattedDate;
   }
 
-  cacheImages(BuildContext context, String url ){
+  cacheImages(BuildContext context, String url) {
     CachedNetworkImage(
       imageUrl: url,
-      placeholder: (context, url) => Icon(Icons.person,color: Colors.black,),
-      errorWidget: (context, url, error) => Icon(Icons.error, color:  Colors.black),
+      placeholder: (context, url) => Icon(
+        Icons.person,
+        color: Colors.black,
+      ),
+      errorWidget: (context, url, error) =>
+          Icon(Icons.error, color: Colors.black),
     );
   }
 }

@@ -39,7 +39,7 @@ class _WalletScreenState extends State<WalletScreen> {
                 ? spaceZero
                 : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text('Recharge History', style: poppinsStyle500Medium.copyWith(fontSize: 20, color: Colors.white))),
+                child: Text('Transaction History', style: poppinsStyle500Medium.copyWith(fontSize: 20, color: Colors.white))),
             spaceHeight10,
             Expanded(child: _buildRideHistory(balanceProvider)),
           ],

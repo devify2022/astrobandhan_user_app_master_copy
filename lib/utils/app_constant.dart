@@ -7,9 +7,9 @@ class AppConstant {
   // API BASE URL
   // static const String baseUrl = "http://176.57.189.188:8080/quick/api/";
   //static const String baseUrl = "https://www.digiweb-shpk.com:8443/quick/api/";
-  static const String baseUrl = "http://192.168.31.156:8000/";
+  // static const String baseUrl = "http://192.168.31.156:8000/";
 
-//   static const String baseUrl = "https://www.devifai.in/";
+  static const String baseUrl = "https://www.devifai.in/";
 
   // static const String  baseUrl = "http://10.0.2.2:8000/";
   static String boxFilterURI = '${baseUrl}poi/filter/mobile/geo';
@@ -21,20 +21,34 @@ class AppConstant {
   static String getAstrologerAIURI =
       'astrobandhan/v1/user/get/all/ai/astrologers';
 
+//created by me(Subho)
+
+  static String getAstrologerById(String id) =>
+      'astrobandhan/v1/astrologer/profile/$id'; // 
+
+  static String getUserDetails = 'astrobandhan/v1/user/get/userDetails';
+  static String addReview = 'astrobandhan/v1/user/addreview';
+  static String sendGift = 'astrobandhan/v1/user/send/gift';
+  static String topAstrologers = 'astrobandhan/v1/user/get/top/astrologers';
+  static String categoriesForAstrologer = 'astrobandhan/v1/admin/get/astrologer/category';
 
 
-  static String getUserDetails =
-      'astrobandhan/v1/user/get/userDetails';
+
+  //-------------------------------
 
   // for Balance
-  static String getBalanceHistoryURI = 'astrobandhan/v1/user/get/balance/history';
+  static String getBalanceHistoryURI =
+      'astrobandhan/v1/user/get/balance/history';
   static String getCallHistoryURI = 'astrobandhan/v1/user/get/call/history';
-  static String getChatHistoryURI = 'astrobandhan/v1/user/get/chat/history/${loginUserModel.id}';
+  static String getChatHistoryURI =
+      'astrobandhan/v1/user/get/chat/history/${loginUserModel.id}';
   static String addBalanceURI = 'astrobandhan/v1/user/add/balance';
 
   static const String astromallCategory = "astrobandhan/v1/productCategory";
-  static const String getAllAstromallProduct = "astrobandhan/v1/product/filter/null/true";
-  static const String astromallProductOrder = "astrobandhan/v1/order/createOrder";
+  static const String getAllAstromallProduct =
+      "astrobandhan/v1/product/filter/null/true";
+  static const String astromallProductOrder =
+      "astrobandhan/v1/order/createOrder";
 
   static const String homeActiveURI = 'home/GEO';
   static const String login = "astrobandhan/v1/user/login";

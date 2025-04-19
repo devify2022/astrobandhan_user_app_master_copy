@@ -25,21 +25,35 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset(ImageResources.screenBG, fit: BoxFit.cover)),
+          Positioned.fill(
+              child: Image.asset(ImageResources.screenBG, fit: BoxFit.cover)),
           SafeArea(
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                AppBarWidget(title: 'LOGIN', textAlignCenter: true),
+                AppBarWidget(
+                  title: 'LOGIN',
+                  textAlignCenter: true,
+                  onBackPressed: () {
+                    // Navigate to DashboardScreen when back button is pressed
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DashboardScreen()),
+                    );
+                  },
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
                     child: Padding(
-                      padding: EdgeInsets.fromLTRB(10.0, 0, 10.0, MediaQuery.of(context).viewInsets.bottom + 24.0),
+                      padding: EdgeInsets.fromLTRB(10.0, 0, 10.0,
+                          MediaQuery.of(context).viewInsets.bottom + 24.0),
                       child: ConstrainedBox(
                         constraints: BoxConstraints(
-                            minHeight:
-                                MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top - MediaQuery.of(context).padding.bottom),
+                            minHeight: MediaQuery.of(context).size.height -
+                                MediaQuery.of(context).padding.top -
+                                MediaQuery.of(context).padding.bottom),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -53,9 +67,17 @@ class LoginScreen extends StatelessWidget {
                                   labelText: 'Mobile',
                                   controller: phoneController,
                                   keyboardType: TextInputType.phone,
-                                  autofillHints: [AutofillHints.telephoneNumber],
                                   focusNode: phoneFocusNode,
                                   nextFocusNode: passwordFocusNode,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter
+                                        .digitsOnly, // Restrict input to digits only
+                                    LengthLimitingTextInputFormatter(
+                                        10), // Max length of 10 digits
+                                  ],
+                                  autofillHints: [
+                                    AutofillHints.telephoneNumber
+                                  ],
                                 ),
                                 const SizedBox(height: 10),
                                 CustomTextField(
@@ -66,7 +88,8 @@ class LoginScreen extends StatelessWidget {
                                   textInputAction: TextInputAction.done,
                                   keyboardType: TextInputType.visiblePassword,
                                   autofillHints: [AutofillHints.password],
-                                  onEditingComplete: () => TextInput.finishAutofillContext(),
+                                  onEditingComplete: () =>
+                                      TextInput.finishAutofillContext(),
                                   focusNode: passwordFocusNode,
                                 ),
                                 const SizedBox(height: 24),
@@ -115,12 +138,40 @@ class LoginScreen extends StatelessWidget {
                                 //   },
                                 // ),
 
-                                Consumer<AuthProvider>(builder: (context, provider, child) {
+                                Consumer<AuthProvider>(
+                                    builder: (context, provider, child) {
                                   return CustomButtons.saveButton(
                                       onPressed: () {
-                                        provider.signIn(phoneController.text, passwordController.text, callback: (value) {
+                                        String phone =
+                                            phoneController.text.trim();
+
+                                        // Check if phone is empty
+                                        if (phone.isEmpty) {
+                                          showToastMessage(
+                                              "Please enter your mobile number");
+                                          return;
+                                        }
+
+                                        // Check if phone contains only digits
+                                        if (!RegExp(r'^[0-9]+$')
+                                            .hasMatch(phone)) {
+                                          showToastMessage(
+                                              "Phone number should contain only digits");
+                                          return;
+                                        }
+
+                                        // Check phone length (not greater than 10)
+                                        if (phone.length > 10) {
+                                          showToastMessage(
+                                              "Phone number should not exceed 10 digits");
+                                          return;
+                                        }
+                                        provider.signIn(phoneController.text,
+                                            passwordController.text,
+                                            callback: (value) {
                                           if (value) {
-                                            Helper.pushRemoveScreen(context, DashboardScreen());
+                                            Helper.pushRemoveScreen(
+                                                context, DashboardScreen());
                                           }
                                         });
                                       },
@@ -134,7 +185,9 @@ class LoginScreen extends StatelessWidget {
                                     () {
                                       Navigator.push(
                                         context,
-                                        MaterialPageRoute(builder: (context) => ForgetPasswordScreen()),
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                ForgetPasswordScreen()),
                                       );
                                     },
                                   ),
@@ -142,17 +195,29 @@ class LoginScreen extends StatelessWidget {
                                 const SizedBox(height: 30),
                                 Row(
                                   children: [
-                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.5))),
+                                    Expanded(
+                                        child: Divider(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.5))),
                                     Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                                        child: Text('Or', style: TextStyle(fontFamily: 'Poppins', color: Colors.white.withValues(alpha: 0.7)))),
-                                    Expanded(child: Divider(color: Colors.white.withValues(alpha: 0.5))),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Text('Or',
+                                            style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                color: Colors.white
+                                                    .withValues(alpha: 0.7)))),
+                                    Expanded(
+                                        child: Divider(
+                                            color: Colors.white
+                                                .withValues(alpha: 0.5))),
                                   ],
                                 ),
                                 const SizedBox(height: 30),
                                 CustomButtons.saveButton(
                                     onPressed: () {
-                                      Helper.toScreen(context, LoginWithOtpScreen());
+                                      Helper.toScreen(
+                                          context, LoginWithOtpScreen());
                                     },
                                     text: 'LOGIN WITH OTP'),
                                 const SizedBox(height: 30),
@@ -160,7 +225,10 @@ class LoginScreen extends StatelessWidget {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text("Don't have an account? ",
-                                        style: TextStyle(fontFamily: 'Poppins', color: Colors.white.withValues(alpha: 0.7))),
+                                        style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            color: Colors.white
+                                                .withValues(alpha: 0.7))),
                                     CustomButtons.buildOutlinedButton(
                                       'Sign Up',
                                       () {
@@ -174,7 +242,11 @@ class LoginScreen extends StatelessWidget {
                                         //   ),
                                         // );
 
-                                        Navigator.push(context, MaterialPageRoute(builder: (context) => CreateAccount()));
+                                        Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    CreateAccount()));
                                       },
                                     ),
                                   ],

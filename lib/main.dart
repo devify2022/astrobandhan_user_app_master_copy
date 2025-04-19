@@ -1,5 +1,6 @@
 import 'package:astrobandhan/helper/library/month_year_picker/month_year_picker.dart';
 import 'package:astrobandhan/localization/app_localization.dart';
+import 'package:astrobandhan/provider/astrologer_provider.dart';
 import 'package:astrobandhan/provider/astromall_provider.dart';
 import 'package:astrobandhan/provider/auth_provider.dart';
 import 'package:astrobandhan/provider/balance_provider.dart';
@@ -10,6 +11,7 @@ import 'package:astrobandhan/provider/localization_provider.dart';
 import 'package:astrobandhan/provider/setting_provider.dart';
 import 'package:astrobandhan/provider/splash_provider.dart';
 import 'package:astrobandhan/provider/theme_provider.dart';
+import 'package:astrobandhan/provider/user_provider.dart';
 import 'package:astrobandhan/screens/dashboard/dashboard_screen.dart';
 import 'package:astrobandhan/screens/splash/splash.dart';
 import 'package:astrobandhan/utils/app_constant.dart';
@@ -30,7 +32,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await di.init();
   await EasyLocalization.ensureInitialized();
-   await initializeDateFormatting();
+  await initializeDateFormatting();
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(
@@ -38,8 +40,10 @@ void main() async {
       ChangeNotifierProvider(create: (context) => di.sl<LanguageProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<AuthProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<DashboardProvider>()),
+      ChangeNotifierProvider(create: (context) => di.sl<UserProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<HomeProvider>()),
-       ChangeNotifierProvider(create: (context) => di.sl<AstromallProvider>()),
+      ChangeNotifierProvider(create: (context) => di.sl<AstromallProvider>()),
+      ChangeNotifierProvider(create: (context) => di.sl<AstrologerProvider>()),
       // ChangeNotifierProvider(create: (context) => di.sl<UtilsProvider>()),
       // ChangeNotifierProvider(create: (context) => di.sl<AddNewsProvider>()),
       // ChangeNotifierProvider(create: (context) => di.sl<LocationProvider>()),

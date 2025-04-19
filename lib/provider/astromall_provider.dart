@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:astrobandhan/datasource/model/astrologer_model.dart';
+import 'package:astrobandhan/datasource/model/others/astrologer_model.dart';
 import 'package:astrobandhan/datasource/model/astromall/order_model.dart';
 import 'package:astrobandhan/datasource/model/astromall/product_category.dart';
 import 'package:astrobandhan/datasource/model/astromall/product_model.dart';

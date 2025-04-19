@@ -5,6 +5,7 @@ import 'package:astrobandhan/helper/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:dio/dio.dart';
 
 class AuthProvider with ChangeNotifier {
   final AuthRepo authRepo;
@@ -129,7 +130,7 @@ class AuthProvider with ChangeNotifier {
         await authRepo.otpValidation(phone, pin, verificationId);
     _isLoading = false;
     debugPrint(
-        "📥 Full API Response of OTP Validation: ${apiResponse.response}");
+        "📥 Full API Response of OTP Validation: ${apiResponse.response.data['data']['user']}");
     if (apiResponse.response.statusCode == 200) {
       authRepo.saveUserToken(apiResponse.response.data['data']['accessToken']);
       authRepo.saveUserInfo(
@@ -172,36 +173,58 @@ class AuthProvider with ChangeNotifier {
   }
 
 //
-  Future signIn(String phone, String password,
-      {required Function callback}) async {
+  Future<void> signIn(String phone, String password, {required Function callback}) async {
+  try {
     _isLoading = true;
     if (authRepo.checkTokenExist()) {
       await authRepo.clearToken();
     }
     notifyListeners();
-    ApiResponse apiResponse = await authRepo.signIn(phone, password);
+
+    // Get the raw response without letting Dio throw exceptions
+    final response = await authRepo.signIn(phone, password);
+    
     _isLoading = false;
-    if (isRemember) {
-      authRepo.saveUserEmailAndPassword(phone, password);
+    
+    // Handle response based on structure and status code
+    if (response.response != null) {
+      final statusCode = response.response!.statusCode;
+      final data = response.response!.data;
+      
+      debugPrint("📥 Response status code: $statusCode");
+      debugPrint("📥 Response data: $data");
+      
+      if (statusCode == 200 && data['success'] == true) {
+        // Success case
+        if (isRemember) {
+          authRepo.saveUserEmailAndPassword(phone, password);
+        } else {
+          authRepo.clearUserEmailAndPassword();
+        }
+        
+        showToastMessage(data['message'], isError: false);
+        authRepo.saveUserInfo(LoginUserModel.fromJson(data['data']['user']));
+        authRepo.saveUserToken(data['data']['accessToken']);
+        callback(true);
+      } else {
+        // Error case - extract message directly from response
+        final message = data['message'] ?? "Unexpected error occurred";
+        showToastMessage(message);
+        callback(false);
+      }
     } else {
-      authRepo.clearUserEmailAndPassword();
+      showToastMessage("No response from server");
+      callback(false);
     }
-
-    if (apiResponse.response.statusCode == 200) {
-      showToastMessage(apiResponse.response.data['message'], isError: false);
-
-      authRepo.saveUserInfo(
-          LoginUserModel.fromJson(apiResponse.response.data['data']['user']));
-
-      authRepo.saveUserToken(apiResponse.response.data['data']['accessToken']);
-
-      callback(true);
-    } else {
-      showToastMessage(apiResponse.error.toString());
-    }
+  } catch (error) {
+    _isLoading = false;
+    debugPrint("❌ General Error: $error");
+    showToastMessage("Something went wrong. Please try again.");
+    callback(false);
+  } finally {
     notifyListeners();
   }
-
+}
   LoginUserModel get userModel => authRepo.getUserInfoData();
 
   // Future<Future<LoginUserModel?>> getUserInfo() async {

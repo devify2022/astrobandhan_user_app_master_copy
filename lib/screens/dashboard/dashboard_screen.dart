@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:astrobandhan/helper/helper.dart';
 import 'package:astrobandhan/provider/dashboard_provider.dart';
 import 'package:astrobandhan/screens/ai/ai_astro_screen.dart';
+import 'package:astrobandhan/screens/astrologer/astrologer_screen.dart';
 import 'package:astrobandhan/screens/dashboard/widget/drawer.dart';
 import 'package:astrobandhan/screens/history/history_screen.dart';
 import 'package:astrobandhan/screens/home/home_scrren.dart';
@@ -26,7 +27,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     HomeScrren(),
     AiAstroScreen(),
     Container(),
-    Container(),
+    AstrologerScreen(),
     HistoryScreen(),
   ];
 
@@ -61,10 +62,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: interStyle700Bold.copyWith(fontSize: 18)),
             centerTitle: true,
             actions: [
-              IconButton(
-                  icon: SvgPicture.asset(ImageResources.search,
-                      width: 20, height: 20),
-                  onPressed: () {}),
+              // IconButton(
+              //     icon: SvgPicture.asset(ImageResources.search,
+              //         width: 20, height: 20),
+              //     onPressed: () {}),
               IconButton(
                   icon: SvgPicture.asset(ImageResources.wallet,
                       width: 20, height: 20),

@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../user/userDetail_screen.dart';
 
 class CustomDrawer extends StatefulWidget {
   const CustomDrawer({super.key});
@@ -240,8 +241,15 @@ class _CustomDrawerState extends State<CustomDrawer> {
             IconButton(
               icon: const Icon(Icons.chevron_right, color: Colors.white),
               onPressed: () {
-                // Navigator.push(context,
-                //     MaterialPageRoute(builder: (context) => DrawerHeaderEdit()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UserDetailsScreen(
+                      userModel:
+                          provider.userModel, // Pass the userModel object
+                    ),
+                  ),
+                );
               },
             ),
           ],

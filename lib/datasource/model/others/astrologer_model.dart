@@ -8,6 +8,7 @@ class AstrologerModel {
   final double pricePerCallMinute;
   final double pricePerVideoCallMinute;
   final double pricePerChatMinute;
+  final String status;
 
   /// The `available` object
   final bool isAvailable;
@@ -29,6 +30,9 @@ class AstrologerModel {
 
   /// New field: popular
   final bool popular;
+
+  /// Reviews list
+  final List<ReviewModel> reviews;
 
   AstrologerModel({
     required this.id,
@@ -53,31 +57,33 @@ class AstrologerModel {
     required this.callCommission,
     required this.videoCallCommission,
     required this.isOffline,
-    required this.popular, // Add the new field here
+    required this.popular,
+    required this.status,
+    required this.reviews, // Added reviews field
   });
 
   factory AstrologerModel.fromJson(Map<String, dynamic> json) {
-    // The "available" sub-object might be null if not present
     final available = json['available'] ?? {};
+    final reviewsList = (json['reviews'] ?? [])
+        .map<ReviewModel>((review) => ReviewModel.fromJson(review))
+        .toList();
 
     return AstrologerModel(
       id: json['_id'] ?? '',
       name: json['name'] ?? '',
+      status: json['status'] ?? '',
       experience: json['experience'] ?? 0,
       rating: json['rating'] ?? 0,
       specialities: List<String>.from(json['specialities'] ?? []),
       avatar: json['avatar'] ?? '',
       pricePerCallMinute: (json['pricePerCallMinute'] ?? 0).toDouble(),
-      pricePerVideoCallMinute: (json['pricePerVideoCallMinute'] ?? 0).toDouble(),
+      pricePerVideoCallMinute:
+          (json['pricePerVideoCallMinute'] ?? 0).toDouble(),
       pricePerChatMinute: (json['pricePerChatMinute'] ?? 0).toDouble(),
-
-      // available object
       isAvailable: available['isAvailable'] ?? false,
       isCallAvailable: available['isCallAvailable'] ?? false,
       isChatAvailable: available['isChatAvailable'] ?? false,
       isVideoCallAvailable: available['isVideoCallAvailable'] ?? false,
-
-      // other booleans / fields
       isVerified: json['isVerified'] ?? false,
       isFeatured: json['isFeatured'] ?? false,
       gender: json['gender'] ?? '',
@@ -87,9 +93,28 @@ class AstrologerModel {
       callCommission: json['callCommission'] ?? 0,
       videoCallCommission: json['videoCallCommission'] ?? 0,
       isOffline: json['isOffline'] ?? false,
+      popular: json['popular'] ?? false,
+      reviews: reviewsList, // Added reviews parsing
+    );
+  }
+}
 
-      // New field: popular
-      popular: json['popular'] ?? false, // Default to false if not present
+class ReviewModel {
+  final String comment;
+  final int rating;
+  final String userName;
+
+  ReviewModel({
+    required this.comment,
+    required this.rating,
+    required this.userName,
+  });
+
+  factory ReviewModel.fromJson(Map<String, dynamic> json) {
+    return ReviewModel(
+      comment: json['comment'] ?? '',
+      rating: json['rating'] ?? 0,
+      userName: json['userName'] ?? 'Anonymous',
     );
   }
 }

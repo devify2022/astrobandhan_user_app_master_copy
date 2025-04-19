@@ -1,4 +1,4 @@
-import 'package:astrobandhan/datasource/model/astrologer_model.dart';
+import 'package:astrobandhan/datasource/model/others/astrologer_model.dart';
 import 'package:astrobandhan/helper/helper.dart';
 import 'package:astrobandhan/provider/home_provider.dart';
 import 'package:astrobandhan/utils/app_colors.dart';

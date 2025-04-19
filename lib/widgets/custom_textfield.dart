@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+
 const blackColor = Colors.black;
 const whiteColor = Colors.white;
 const greyColor = Colors.grey;
@@ -88,6 +89,7 @@ class CustomTextField extends StatefulWidget {
     this.isPassword = false,
     this.isEmail = false,
     this.textCapitalization = false,
+    this.inputFormatters, // Add this line to accept inputFormatters
   });
 
   final bool? enabled;
@@ -141,6 +143,7 @@ class CustomTextField extends StatefulWidget {
   final bool isPassword;
   final bool isEmail;
   final bool textCapitalization;
+  final List<TextInputFormatter>? inputFormatters; // Add this line
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -275,20 +278,22 @@ class _CustomTextFieldState extends State<CustomTextField> {
             disabledBorder: _buildBorder(
                 color: widget.isOutlineInputBorderColor ?? redColor),
           ),
-          inputFormatters: [
-            if (widget.textCapitalization)
-              CapitalizeFirstLetterFormatter()
-            else if (widget.isEmail)
-              LowerCaseTextFormatter()
-            else if (widget.isPrice)
-              FilteringTextInputFormatter.allow(
-                  RegExp(r'^\d*\.?\d{0,2}')) // Allows decimals for prices
-            else if (widget.keyboardType == TextInputType.number ||
-                widget.keyboardType == TextInputType.phone)
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
-            else if (widget.maxInputLength != null)
-              LengthLimitingTextInputFormatter(widget.maxInputLength),
-          ],
+          // inputFormatters: [
+          //   if (widget.textCapitalization)
+          //     CapitalizeFirstLetterFormatter()
+          //   else if (widget.isEmail)
+          //     LowerCaseTextFormatter()
+          //   else if (widget.isPrice)
+          //     FilteringTextInputFormatter.allow(
+          //         RegExp(r'^\d*\.?\d{0,2}')) // Allows decimals for prices
+          //   else if (widget.keyboardType == TextInputType.number ||
+          //       widget.keyboardType == TextInputType.phone)
+          //     FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+          //   else if (widget.maxInputLength != null)
+          //     LengthLimitingTextInputFormatter(widget.maxInputLength),
+          // ],
+          inputFormatters:
+              widget.inputFormatters ?? [], // Use the passed inputFormatters
           style: TextStyle(
             color: widget.textColor,
             fontSize: widget.textFontSize ?? 15,

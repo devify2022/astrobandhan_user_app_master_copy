@@ -1,4 +1,3 @@
-
 import 'package:astrobandhan/datasource/model/base/api_response.dart';
 import 'package:astrobandhan/datasource/remote/dio/dio_client.dart';
 import 'package:astrobandhan/datasource/remote/exception/api_error_handler.dart';
@@ -32,14 +31,32 @@ class HomeRepo {
     }
   }
 
-    Future<ApiResponse> getUserDetails() async {
+  Future<ApiResponse> getUserDetails() async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.get(AppConstant.getUserDetails,data: 
-        {"userId": authRepo.getUserInfoData().id}
-      );
+      response = await dioClient.get(AppConstant.getUserDetails,
+          data: {"userId": authRepo.getUserInfoData().id});
       return ApiResponse.withSuccess(response);
     } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
+    }
+  }
+
+  Future<ApiResponse> getTopAstrologers() async {
+    Response response = Response(
+      requestOptions: RequestOptions(path: AppConstant.topAstrologers),
+    );
+    try {
+      print("Making API request to: ${AppConstant.topAstrologers}");
+
+      response = await dioClient.post(AppConstant.topAstrologers);
+      print("API Response Data: ${response.data}");
+
+      return ApiResponse.withSuccess(response);
+    } catch (e, stackTrace) {
+      print("Error fetching astrologers: ${ApiErrorHandler.getMessage(e)}");
+      print("StackTrace: $stackTrace");
+
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
     }
   }
