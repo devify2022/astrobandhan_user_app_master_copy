@@ -173,58 +173,65 @@ class AuthProvider with ChangeNotifier {
   }
 
 //
-  Future<void> signIn(String phone, String password, {required Function callback}) async {
-  try {
-    _isLoading = true;
-    if (authRepo.checkTokenExist()) {
-      await authRepo.clearToken();
-    }
-    notifyListeners();
+  Future<void> signIn(String phone, String password,
+      {required Function callback}) async {
+    try {
+      _isLoading = true;
+      if (authRepo.checkTokenExist()) {
+        print("Token exists, clearing it.");
+        await authRepo.clearToken();
+      }
+      notifyListeners();
 
-    // Get the raw response without letting Dio throw exceptions
-    final response = await authRepo.signIn(phone, password);
-    
-    _isLoading = false;
-    
-    // Handle response based on structure and status code
-    if (response.response != null) {
-      final statusCode = response.response!.statusCode;
-      final data = response.response!.data;
-      
-      debugPrint("📥 Response status code: $statusCode");
-      debugPrint("📥 Response data: $data");
-      
-      if (statusCode == 200 && data['success'] == true) {
-        // Success case
-        if (isRemember) {
-          authRepo.saveUserEmailAndPassword(phone, password);
+      print("📞 Phone: $phone, Password: $password");
+
+      // Get the raw response without letting Dio throw exceptions
+      final response = await authRepo.signIn(phone, password);
+
+      _isLoading = false;
+
+      print("📥 Sign in Full API Response: ${response.response}");
+
+      // Handle response based on structure and status code
+      if (response.response != null) {
+        final statusCode = response.response!.statusCode;
+        final data = response.response!.data;
+
+        debugPrint("📥 Response status code: $statusCode");
+        debugPrint("📥 Response data: $data");
+
+        if (statusCode == 200 && data['success'] == true) {
+          // Success case
+          if (isRemember) {
+            authRepo.saveUserEmailAndPassword(phone, password);
+          } else {
+            authRepo.clearUserEmailAndPassword();
+          }
+
+          showToastMessage(data['message'], isError: false);
+          authRepo.saveUserInfo(LoginUserModel.fromJson(data['data']['user']));
+          authRepo.saveUserToken(data['data']['accessToken']);
+          callback(true);
         } else {
-          authRepo.clearUserEmailAndPassword();
+          // Error case - extract message directly from response
+          final message = data['message'] ?? "Unexpected error occurred";
+          showToastMessage(message);
+          callback(false);
         }
-        
-        showToastMessage(data['message'], isError: false);
-        authRepo.saveUserInfo(LoginUserModel.fromJson(data['data']['user']));
-        authRepo.saveUserToken(data['data']['accessToken']);
-        callback(true);
       } else {
-        // Error case - extract message directly from response
-        final message = data['message'] ?? "Unexpected error occurred";
-        showToastMessage(message);
+        showToastMessage("No response from server");
         callback(false);
       }
-    } else {
-      showToastMessage("No response from server");
+    } catch (error) {
+      _isLoading = false;
+      debugPrint("❌ General Error: $error");
+      showToastMessage("Something went wrong. Please try again.");
       callback(false);
+    } finally {
+      notifyListeners();
     }
-  } catch (error) {
-    _isLoading = false;
-    debugPrint("❌ General Error: $error");
-    showToastMessage("Something went wrong. Please try again.");
-    callback(false);
-  } finally {
-    notifyListeners();
   }
-}
+
   LoginUserModel get userModel => authRepo.getUserInfoData();
 
   // Future<Future<LoginUserModel?>> getUserInfo() async {

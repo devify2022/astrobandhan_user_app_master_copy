@@ -52,16 +52,26 @@ class LoggingInterceptor extends InterceptorsWrapper {
   }
 }
 
+Future<void> clearAllToken() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    await sharedPreferences.remove(AppConstant.token);
+    await sharedPreferences.remove(AppConstant.refreshToken);
+  
+}
+
 class TokenInterceptor extends Interceptor {
   final Dio dio;
 
   TokenInterceptor(this.dio);
 
   @override
+  @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
     if (err.type == DioExceptionType.unknown) {
-      // No internet connection
-      Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
+      await clearAllToken(); // your method to clear tokens
+
+      if (navigatorKey.currentContext != null) {
+        Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(
           SwipeablePageRoute(
             canOnlySwipeFromEdge: true,
             backGestureDetectionWidth: 10,
@@ -69,12 +79,15 @@ class TokenInterceptor extends Interceptor {
               return NoInternetOrDataScreen(isNoInternet: true);
             },
           ),
-          (route) => false);
-    } else if (err.response!.statusCode == 403) {
-      // Call the refresh token function
+          (route) => false,
+        );
+      } else {
+        print("Navigator context is null");
+      }
+    } else if (err.response?.statusCode == 403) {
+      // Refresh the token and retry the request
       await refreshToken();
 
-      // Retry the request with the new token
       final opts = Options(
         method: err.requestOptions.method,
         headers: {
@@ -83,11 +96,17 @@ class TokenInterceptor extends Interceptor {
         },
       );
 
-      final cloneReq = await dio.request(err.requestOptions.path, options: opts, data: err.requestOptions.data, queryParameters: err.requestOptions.queryParameters);
+      final cloneReq = await dio.request(
+        err.requestOptions.path,
+        options: opts,
+        data: err.requestOptions.data,
+        queryParameters: err.requestOptions.queryParameters,
+      );
 
-      return handler.resolve(cloneReq);
+      return handler.resolve(cloneReq); // Safe resolve
+    } else {
+      handler.next(err); // Propagate other errors
     }
-    return handler.next(err);
   }
 
   Future<void> refreshToken() async {
@@ -95,8 +114,10 @@ class TokenInterceptor extends Interceptor {
     var mapHeader = {
       'Content-Type': 'application/json; charset=UTF-8',
       'accept': '*/*',
-      'Authorization': 'Bearer ${sharedPreferences.getString(AppConstant.token) ?? ""}',
-      "refresh-token": sharedPreferences.getString(AppConstant.refreshToken) ?? ''
+      'Authorization':
+          'Bearer ${sharedPreferences.getString(AppConstant.token) ?? ""}',
+      "refresh-token":
+          sharedPreferences.getString(AppConstant.refreshToken) ?? ''
     };
 
     log("--------------------------------------------------------------------------------------------------------------");
@@ -105,14 +126,18 @@ class TokenInterceptor extends Interceptor {
     log("--------------------------------------------------------------------------------------------------------------");
 
     try {
-      Response response = await dio.post("${AppConstant.baseUrl}${AppConstant.refreshTokenURI}", options: Options(headers: mapHeader));
+      Response response = await dio.post(
+          "${AppConstant.baseUrl}${AppConstant.refreshTokenURI}",
+          options: Options(headers: mapHeader));
 
       log('RESPONSE ${response.statusCode}: ${response.data}');
       log("--------------------------------------------------------------------------------------------------------------");
 
       if (response.statusCode == 200) {
-        sharedPreferences.setString(AppConstant.token, response.data['value']['accessToken']);
-        sharedPreferences.setString(AppConstant.refreshToken, response.data['value']['refreshToken']);
+        sharedPreferences.setString(
+            AppConstant.token, response.data['value']['accessToken']);
+        sharedPreferences.setString(
+            AppConstant.refreshToken, response.data['value']['refreshToken']);
       } else {
         // Handle token refresh failure
         // Navigator.of(navigatorKey.currentContext!).pushAndRemoveUntil(MaterialPageRoute(builder: (context) => LoginScreen()), (route) => false);

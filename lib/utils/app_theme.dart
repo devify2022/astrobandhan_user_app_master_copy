@@ -6,13 +6,12 @@ import 'app_colors.dart';
 import 'text.styles.dart';
 
 class AppTheme {
-
-
   static ThemeData getLightModeTheme({String fontFamily = "Poppins"}) {
-
     return ThemeData(
       scaffoldBackgroundColor: scaffoldBackgroundColor,
-      appBarTheme: AppBarTheme(backgroundColor: scaffoldBackgroundColor, systemOverlayStyle: SystemUiOverlayStyle.light),
+      appBarTheme: AppBarTheme(
+          backgroundColor: scaffoldBackgroundColor,
+          systemOverlayStyle: SystemUiOverlayStyle.light),
       bottomAppBarTheme: BottomAppBarTheme(color: Colors.white),
       buttonTheme: ButtonThemeData(buttonColor: Color(0xFF5b7284)),
       badgeTheme: BadgeThemeData(backgroundColor: Color(0xFFFFFFFF)),
@@ -23,7 +22,11 @@ class AppTheme {
       // canvasColor: AppColors.lightThemeColors['backgroundColor'],
       // primaryColorDark: AppColors.primaryColorDark,
       cardColor: Color(0xFFFFFFFF),
-      dialogTheme: DialogTheme(backgroundColor: Color(0xFFFFFFFF), titleTextStyle: TextStyle(color: Color(0xFF000000))),
+      dialogTheme: const DialogThemeData(
+  backgroundColor: Color(0xFFFFFFFF),
+  titleTextStyle: TextStyle(color: Color(0xFF000000)),
+),
+
       // canvasColor: AppColors.lightThemeColors['backgroundColor'],
       shadowColor: Colors.grey.shade300,
       highlightColor: Colors.grey.shade100,
@@ -63,15 +66,18 @@ class AppTheme {
   static ThemeData getDarkModeTheme({String fontFamily = "Poppins"}) {
     return ThemeData(
       scaffoldBackgroundColor: Color(0xFF000000),
-      appBarTheme: AppBarTheme(backgroundColor: Color(0xFF000000), systemOverlayStyle: SystemUiOverlayStyle.light),
+      appBarTheme: AppBarTheme(
+          backgroundColor: Color(0xFF000000),
+          systemOverlayStyle: SystemUiOverlayStyle.light),
       bottomAppBarTheme: BottomAppBarTheme(color: Color(0xFF000000)),
       // bottomAppBarColor: Color(0xFF000000),
       iconTheme: IconThemeData(color: Color(0xFFFFFFFF)),
       chipTheme: ChipThemeData(backgroundColor: Color(0xFF000000)),
-      dialogTheme: DialogTheme(
-          backgroundColor: Color(0xFF000000),
-          titleTextStyle: TextStyle(color: Color(0xFFFFFFFF)),
-          contentTextStyle: TextStyle(color: Color(0xFFFFFFFF))),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: Color(0xFF000000),
+        titleTextStyle: TextStyle(color: Color(0xFFFFFFFF)),
+        contentTextStyle: TextStyle(color: Color(0xFFFFFFFF)),
+      ),
 
       badgeTheme: BadgeThemeData(backgroundColor: Color(0xFF5b7284)),
       // buttonColor: Color(0xFF5b7284),

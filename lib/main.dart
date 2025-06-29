@@ -1,5 +1,9 @@
+import 'package:astrobandhan/Service/SocketService.dart';
+import 'package:astrobandhan/helper/NotificationHandler.dart';
+import 'package:astrobandhan/helper/helper.dart';
 import 'package:astrobandhan/helper/library/month_year_picker/month_year_picker.dart';
 import 'package:astrobandhan/localization/app_localization.dart';
+import 'package:astrobandhan/provider/agora_provider.dart';
 import 'package:astrobandhan/provider/astrologer_provider.dart';
 import 'package:astrobandhan/provider/astromall_provider.dart';
 import 'package:astrobandhan/provider/auth_provider.dart';
@@ -8,7 +12,9 @@ import 'package:astrobandhan/provider/dashboard_provider.dart';
 import 'package:astrobandhan/provider/home_provider.dart';
 import 'package:astrobandhan/provider/language_provider.dart';
 import 'package:astrobandhan/provider/localization_provider.dart';
+import 'package:astrobandhan/provider/overlay_provider.dart';
 import 'package:astrobandhan/provider/setting_provider.dart';
+import 'package:astrobandhan/provider/socket_provider.dart';
 import 'package:astrobandhan/provider/splash_provider.dart';
 import 'package:astrobandhan/provider/theme_provider.dart';
 import 'package:astrobandhan/provider/user_provider.dart';
@@ -22,19 +28,48 @@ import 'package:flutter/services.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
-import 'di_container.dart' as di;
 
-GlobalKey<NavigatorState> navigatorKey = new GlobalKey<NavigatorState>();
+import 'di_container.dart' as di;
+import 'package:astrobandhan/helper/Chat_Overlay_button_widget.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+
+import 'package:astrobandhan/helper/Observer/detectLifeCycle.observer.dart';
+import 'package:astrobandhan/provider/NotifcationService_provider.dart';
+
+GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Initialize OneSignal
+  OneSignal.initialize("befff9f6-5ae6-4eeb-a989-fe2eabe52a82");
+
+  OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
+
+  // Add subscription observer to log when device registers
+  OneSignal.User.pushSubscription.addObserver((state) {
+    print("🔔 OneSignal Subscription State Updated:");
+    print("Player ID: ${state.current.id}");
+    print("Is Subscribed: ${state.current.optedIn}");
+    print("Token: ${state.current.token}");
+  });
+
+  // Add notification observer to log when notifications are received
+  OneSignal.Notifications.addForegroundWillDisplayListener((event) {
+    print("📬 Notification received: ${event.notification.body}");
+  });
+
   await di.init();
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
   runApp(MultiProvider(
     providers: [
+      ChangeNotifierProvider(create: (_) => OverlayProvider()),
       ChangeNotifierProvider(
           create: (context) => di.sl<LocalizationProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<LanguageProvider>()),
@@ -44,53 +79,82 @@ void main() async {
       ChangeNotifierProvider(create: (context) => di.sl<HomeProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<AstromallProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<AstrologerProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<UtilsProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<AddNewsProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<LocationProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<JobsProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<JobApplyProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<VariousProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<WishListProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<ChatProvider>()),
+      Provider<NotificationService>(create: (_) => NotificationService()),
       ChangeNotifierProvider(create: (context) => di.sl<ThemeProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<ListingProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<SettingProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<SplashProvider>()),
       ChangeNotifierProvider(create: (context) => di.sl<BalanceProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<CompanyProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<LocationHelperProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<ProfileProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<HelperProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<BoxProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<BeachProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<MapHelperProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<HomePageProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<PublicationsProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<NotificationProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<NotificationProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<DestinationProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<PlacesDetailProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<PoiMenuProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<NewsProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<CartProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<OrderProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<AddressProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<BugsReportProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<BusProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<HotelProvider>()),
-      // ChangeNotifierProvider(create: (context) => di.sl<Hotel2Provider>()),
-      // ChangeNotifierProvider(create: (context) => MainProvider()),
-      // ChangeNotifierProvider(create: (context) => SearchProvider()),
-      // ChangeNotifierProvider(create: (context) => DataStorageProvider()),
+      ChangeNotifierProvider(create: (_) => SocketProvider()),
+      ChangeNotifierProxyProvider<SocketProvider, AgoraProvider>(
+        create: (_) => AgoraProvider(socketProvider: null), // temporarily null
+        update: (_, socketProvider, __) =>
+            AgoraProvider(socketProvider: socketProvider),
+      ),
+      ChangeNotifierProvider<NotificationHandler>(
+          create: (_) => NotificationHandler()),
     ],
     child: MyApp(),
   ));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  late AppLifecycleObserver _lifecycleObserver;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Create our lifecycle observer
+    _lifecycleObserver = AppLifecycleObserver((isActive) {
+      _handleAppStateChange(isActive);
+    });
+
+    // Register observer
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
+
+    // Initialize socket after first build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeSocket(true); // Initialize with active state on first run
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
+    super.dispose();
+  }
+
+  void _handleAppStateChange(bool isActive) {
+    print("User is ${isActive ? 'active' : 'inactive'}");
+    _initializeSocket(isActive);
+  }
+
+  void _initializeSocket(bool isActive) {
+    // Get providers directly without using context in initState
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final socketProvider = Provider.of<SocketProvider>(context, listen: false);
+
+    // Fetch userId
+    String? userId = authProvider.authRepo.getUserInfoData()?.id;
+
+    if (userId != null && userId.isNotEmpty) {
+      // First ensure the socket is initialized
+      if (!socketProvider.isConnected) {
+        socketProvider.initializeSocket(userId);
+      }
+
+      // Then emit user activity
+      socketProvider.emitUserActivity(userId, isActive);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     List<Locale> locals = [];
@@ -100,7 +164,6 @@ class MyApp extends StatelessWidget {
 
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: Colors.white,
-        // Color for Android
         statusBarIconBrightness: Brightness.dark,
         statusBarBrightness: Brightness.light,
         systemNavigationBarColor: Colors.white,
@@ -111,9 +174,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       localizationsDelegates: const [
         AppLocalization.delegate,
-        // GlobalMaterialLocalizations.delegate,
-        // GlobalWidgetsLocalizations.delegate,
-        // GlobalCupertinoLocalizations.delegate,
         MonthYearPickerLocalizations.delegate,
       ],
       builder: EasyLoading.init(),
@@ -121,13 +181,20 @@ class MyApp extends StatelessWidget {
       locale: Provider.of<LocalizationProvider>(context).locale,
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: scaffoldMessengerKey,
-      // add this
       navigatorKey: navigatorKey,
       title: 'Rudraganga: Talk to Astrologer',
       theme: AppTheme.getLightModeTheme(),
-      home: Provider.of<AuthProvider>(context).authRepo.checkTokenExist()
-          ? DashboardScreen()
-          : SplashScreen(),
+      home: Consumer<AuthProvider>(
+        builder: (context, authProvider, _) {
+          return Stack(
+            children: [
+              authProvider.authRepo.checkTokenExist()
+                  ? DashboardScreen()
+                  : SplashScreen(),
+            ],
+          );
+        },
+      ),
     );
   }
 }

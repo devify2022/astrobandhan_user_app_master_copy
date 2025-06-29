@@ -9,12 +9,26 @@ import 'package:shared_preferences/shared_preferences.dart';
 class HomeRepo {
   final DioClient dioClient;
   final AuthRepo authRepo;
+  
   HomeRepo({required this.dioClient, required this.authRepo});
 
-  Future<ApiResponse> getAstrologer(int page, {int size = 20}) async {
+  Future<ApiResponse> getAstrologer(int page, {int size = 3}) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
       response = await dioClient.get(AppConstant.getAstrologerURI(page, size));
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
+    }
+  }
+
+  Future<ApiResponse> getAstrologerByCategory(String categoryId) async {
+    Response response = Response(requestOptions: RequestOptions(path: ''));
+    try {
+      response = await dioClient.post(
+        AppConstant.getAstrologerByCategoryURI(),
+        data: {'categoryId': categoryId}, // The payload
+      );
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);

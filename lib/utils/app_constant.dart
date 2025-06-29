@@ -5,36 +5,44 @@ import 'package:astrobandhan/helper/helper.dart';
 
 class AppConstant {
   // API BASE URL
-  // static const String baseUrl = "http://176.57.189.188:8080/quick/api/";
-  //static const String baseUrl = "https://www.digiweb-shpk.com:8443/quick/api/";
-  // static const String baseUrl = "http://192.168.31.156:8000/";
 
-  static const String baseUrl = "https://www.devifai.in/";
+  static const String baseUrl = "http://192.168.31.157:8000/";
 
-  // static const String  baseUrl = "http://10.0.2.2:8000/";
+//   static const String baseUrl = "https://www.devifai.in/";
+
   static String boxFilterURI = '${baseUrl}poi/filter/mobile/geo';
 
   static String boxFilterLocationURI(String id) => '${baseUrl}box/$id/location';
 
   static String getAstrologerURI(int page, int size) =>
       'astrobandhan/v1/user/getAstrologer?page=$page&size=$size';
+
+  static String getAstrologerByCategoryURI() =>
+      'astrobandhan/v1/user/getAstrologer/by/category';
   static String getAstrologerAIURI =
       'astrobandhan/v1/user/get/all/ai/astrologers';
 
 //created by me(Subho)
 
   static String getAstrologerById(String id) =>
-      'astrobandhan/v1/astrologer/profile/$id'; // 
+      'astrobandhan/v1/astrologer/profile/$id'; //
 
   static String getUserDetails = 'astrobandhan/v1/user/get/userDetails';
   static String addReview = 'astrobandhan/v1/user/addreview';
   static String sendGift = 'astrobandhan/v1/user/send/gift';
   static String topAstrologers = 'astrobandhan/v1/user/get/top/astrologers';
-  static String categoriesForAstrologer = 'astrobandhan/v1/admin/get/astrologer/category';
-
-
+  static String categoriesForAstrologer =
+      'astrobandhan/v1/admin/get/astrologer/category';
+  static String chatRooms = '${baseUrl}astrobandhan/v1/user/get/chatroom';
 
   //-------------------------------
+
+//------------------------------for call
+  static const String agoraTokenEndpoint =
+      '${baseUrl}astrobandhan/v1/user/agora-token';
+  static const String agoraAppId = '69779ffdb88442ecb348ae75b0b3963d';
+
+//------------------------------
 
   // for Balance
   static String getBalanceHistoryURI =
@@ -42,6 +50,9 @@ class AppConstant {
   static String getCallHistoryURI = 'astrobandhan/v1/user/get/call/history';
   static String getChatHistoryURI =
       'astrobandhan/v1/user/get/chat/history/${loginUserModel.id}';
+
+  static String getCurrentChatHistoryURI =
+      '${baseUrl}astrobandhan/v1/user/get/chatHistory';
   static String addBalanceURI = 'astrobandhan/v1/user/add/balance';
 
   static const String astromallCategory = "astrobandhan/v1/productCategory";

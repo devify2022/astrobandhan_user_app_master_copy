@@ -16,6 +16,7 @@ import 'package:astrobandhan/provider/dashboard_provider.dart';
 import 'package:astrobandhan/provider/home_provider.dart';
 import 'package:astrobandhan/provider/language_provider.dart';
 import 'package:astrobandhan/provider/localization_provider.dart';
+import 'package:astrobandhan/provider/overlay_provider.dart';
 import 'package:astrobandhan/provider/setting_provider.dart';
 import 'package:astrobandhan/provider/splash_provider.dart';
 import 'package:astrobandhan/provider/user_provider.dart';
@@ -64,6 +65,7 @@ Future<void> init() async {
   sl.registerFactory(
       () => ThemeProvider(sharedPreferences: sl(), splashRepo: sl()));
   sl.registerFactory(() => DashboardProvider());
+  sl.registerFactory(() => OverlayProvider());
   sl.registerFactory(() => BalanceProvider(balanceRepo: sl()));
   sl.registerFactory(() => AstromallProvider(astromallRepo: sl()));
 

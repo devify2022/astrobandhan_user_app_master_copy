@@ -43,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
                     children: [
                       Column(
                         children: [
-                          Text('Astro Bandhan',
+                          Text('Rudra Ganga',
                               style: interStyle900Black.copyWith(fontSize: 30)),
                           spaceHeight20,
                           Container(

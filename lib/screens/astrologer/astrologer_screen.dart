@@ -1,13 +1,25 @@
+import 'package:astrobandhan/Service/SocketService.dart';
+import 'package:astrobandhan/datasource/model/call/agoraTokenModel.dart';
 import 'package:astrobandhan/datasource/model/others/astrologer_model.dart';
 import 'package:astrobandhan/helper/helper.dart';
+import 'package:astrobandhan/provider/agora_provider.dart';
 import 'package:astrobandhan/provider/astrologer_provider.dart';
+import 'package:astrobandhan/provider/overlay_provider.dart';
+import 'package:astrobandhan/provider/socket_provider.dart';
+import 'package:astrobandhan/screens/call/call_screen.dart';
+import 'package:astrobandhan/screens/call/video_screen.dart';
+import 'package:astrobandhan/screens/chat/chat_room_screen.dart';
+import 'package:astrobandhan/screens/dashboard/dashboard_screen.dart';
+import 'package:astrobandhan/utils/app_constant.dart';
 import 'package:astrobandhan/provider/home_provider.dart';
 import 'package:astrobandhan/utils/app_colors.dart';
 import 'package:astrobandhan/utils/size.util.dart';
 import 'package:astrobandhan/utils/text.styles.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../astrologer/astrologer_details_screen.dart';
+import 'dart:convert';
 import 'dart:ui'; // Required for ImageFilter.blur
 
 class AstrologerScreen extends StatefulWidget {
@@ -18,35 +30,104 @@ class AstrologerScreen extends StatefulWidget {
 }
 
 class _AstrologerScreenState extends State<AstrologerScreen> {
-  final chips = [
-    'All',
-    'Love',
-    'Career',
-    'Marriage',
-    'Health',
-    'Finance',
-    'Business',
-    'Education',
-    'Pregnancy',
-    'Legal'
-  ];
+  late ScrollController _scrollController;
+  int _currentPage = 1;
+  bool _isLoadingMore = false;
+  bool _initialLoadComplete = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ModalRoute.of(context)!.isCurrent) {
+        _refreshData();
+      }
+    });
+  }
+
+  Widget _buildOverlay() {
+    return Stack(
+      children: [
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            width: double.infinity,
+            height: double.infinity,
+            color: Colors.black.withOpacity(0.3),
+          ),
+        ),
+        Center(
+          child: Text(
+            "Overlay is Active",
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _loadInitialData() {
     final astrologerProvider =
         Provider.of<AstrologerProvider>(context, listen: false);
+    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
 
-    providerHome.getAstrologers();
+    homeProvider.getAstrologers(page: 1, isFirstTime: true);
     astrologerProvider.getAstrologerCategories();
   }
 
+  // Call this method whenever you want to refresh the data
+  void _refreshData() {
+    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+    final astrologerProvider =
+        Provider.of<AstrologerProvider>(context, listen: false);
+    setState(() {
+      _currentPage = 1;
+    });
+    astrologerProvider.getAstrologerCategories();
+    homeProvider.getAstrologers(page: 1, isFirstTime: true);
+  }
+
+  void _scrollListener() {
+    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+    final astrologerProvider =
+        Provider.of<AstrologerProvider>(context, listen: false);
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        !homeProvider.bottomLoading &&
+        homeProvider.hasNextData &&
+        !_isLoadingMore) {
+      setState(() {
+        _isLoadingMore = true;
+        _currentPage = homeProvider.page + 1;
+      });
+      astrologerProvider.getAstrologerCategories();
+      homeProvider.getAstrologers(page: _currentPage).then((_) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   @override
   Widget build(BuildContext context) {
     return Consumer2<HomeProvider, AstrologerProvider>(
       builder: (context, homeProvider, astrologerProvider, child) {
-        // Combine "All" with API categories
         final allCategories = [
           'All',
           ...astrologerProvider.categories.map((c) => c.name)
@@ -54,6 +135,7 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
 
         return Column(
           children: [
+            // Category Chips
             SizedBox(
               height: 50,
               child: ListView.builder(
@@ -62,7 +144,7 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: ChoiceChip(
                       label: Text(
                         allCategories[index],
@@ -82,14 +164,16 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
                           width: 1,
                         ),
                       ),
-                      onSelected: (value) {
+                      onSelected: (value) async {
                         homeProvider.setSelectedChip(index);
-                        // Filter astrologers by category when not "All"
                         if (index == 0) {
-                          homeProvider.getAstrologers();
+                          await homeProvider.getAstrologers(
+                              page: 1, isFirstTime: true);
                         } else {
-                          // homeProvider.getAstrologersByCategory(
-                          //     astrologerProvider.categories[index - 1].id);
+                          final categoryId =
+                              astrologerProvider.categories[index - 1].id;
+                          await homeProvider
+                              .getAstrologersByCategory(categoryId);
                         }
                       },
                     ),
@@ -98,18 +182,57 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
               ),
             ),
             spaceHeight10,
+
+            // Astrologer List
             Expanded(
-              child: homeProvider.aiLoading
+              child: homeProvider.aiLoading && homeProvider.astrologers.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : homeProvider.astrologers.isEmpty
                       ? const Center(child: Text('No Astrologer Found'))
-                      : ListView.builder(
-                          itemCount: homeProvider.astrologers.length,
-                          physics: const BouncingScrollPhysics(),
-                          itemBuilder: (context, index) {
-                            return _buildAstrologerCard(
-                                context, homeProvider.astrologers[index]);
+                      : NotificationListener<ScrollNotification>(
+                          onNotification: (scrollNotification) {
+                            if (scrollNotification is ScrollEndNotification &&
+                                _scrollController.position.pixels >=
+                                    _scrollController.position.maxScrollExtent -
+                                        200 &&
+                                !homeProvider.bottomLoading &&
+                                homeProvider.hasNextData &&
+                                !_isLoadingMore) {
+                              setState(() {
+                                _isLoadingMore = true;
+                                _currentPage = homeProvider.page + 1;
+                              });
+                              homeProvider
+                                  .getAstrologers(page: _currentPage)
+                                  .then((_) {
+                                setState(() {
+                                  _isLoadingMore = false;
+                                });
+                              });
+                              return true;
+                            }
+                            return false;
                           },
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: homeProvider.astrologers.length +
+                                (homeProvider.bottomLoading ? 1 : 0),
+                            physics: const BouncingScrollPhysics(),
+                            itemBuilder: (context, index) {
+                              if (index < homeProvider.astrologers.length) {
+                                return _buildAstrologerCard(
+                                  context,
+                                  homeProvider.astrologers[index],
+                                );
+                              } else {
+                                return const Padding(
+                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  child: Center(
+                                      child: CircularProgressIndicator()),
+                                );
+                              }
+                            },
+                          ),
                         ),
             ),
           ],
@@ -118,6 +241,7 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
     );
   }
 
+  // Rest of your code remains the same...
   Widget _buildAstrologerCard(context, AstrologerModel data) {
     return Container(
       margin: EdgeInsets.only(bottom: 16, left: 12, right: 12),
@@ -283,7 +407,7 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
                           ),
                         ),
                       ),
-                  if (data.status == "busy")
+                    if (data.status == "busy")
                       Positioned(
                         bottom: 4,
                         right: -4,
@@ -303,8 +427,8 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
                           ),
                         ),
                       ),
-                  
-                   if (data.status == "offline")
+
+                    if (data.status == "offline")
                       Positioned(
                         bottom: 4,
                         right: -4,
@@ -324,8 +448,6 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
                           ),
                         ),
                       ),
-                  
-                  
                   ],
                 ),
                 // Details
@@ -603,25 +725,241 @@ class _AstrologerScreenState extends State<AstrologerScreen> {
                     icon: Icons.chat_bubble_rounded,
                     label: "Chat",
                     price: "${data.pricePerChatMinute ?? '30'}/min",
-                    color: Color.fromARGB(130, 155, 117, 233),
-                    onPressed: () {},
+                    color: data.status == 'busy'
+                        ? Color.fromARGB(130, 243, 21, 21)
+                        : data.status == 'offline'
+                            ? Color.fromARGB(255, 97, 95, 95)
+                            : Color.fromARGB(130, 155, 117, 233),
+                    onPressed: () async {
+                      if (data.status == 'busy') {
+                        showToastMessage(
+                            "Astrologer is busy, please try again later.");
+                        return;
+                      } else if (data.status == 'offline') {
+                        showToastMessage(
+                            "Astrologer is offline. We’ll notify you when they’re available.");
+                        return;
+                      }
+
+                      try {
+                        final prefs = await SharedPreferences.getInstance();
+                        final userInfo = prefs.getString(AppConstant.userInfo);
+
+                        if (userInfo == null) {
+                          print("User info not found in preferences.");
+                          // Optionally show login prompt
+                          return;
+                        }
+
+                        final decodedUser = jsonDecode(userInfo);
+                        final String? userId = decodedUser['_id'];
+
+                        if (userId == null || userId.isEmpty) {
+                          print("User ID is missing or empty.");
+                          return;
+                        }
+
+                        final String? astrologerId = data.id;
+                        const chatType = "text";
+
+                        if (astrologerId == null || astrologerId.isEmpty) {
+                          print("Astrologer ID is missing.");
+                          return;
+                        }
+
+                        final socketProvider =
+                            Provider.of<SocketProvider>(context, listen: false);
+                        final chatRoomModel = socketProvider.chatRoomModel;
+                        if (chatRoomModel != null) {
+                          showToastMessage(
+                              "Please cancel you on going chat first.");
+                          return;
+                        }
+                        socketProvider.emitRequestChat(
+                            userId, astrologerId, chatType);
+
+                        showToastMessage("Chat request sent successfully!",
+                            isError: false);
+
+                        // Optional delay before navigating (can be removed if not needed)
+                        await Future.delayed(const Duration(seconds: 3));
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ChatRoomScreen(),
+                          ),
+                        );
+                      } catch (e) {
+                        print("Error in onPressed: $e");
+                        showToastMessage(
+                            "Something went wrong. Please try again.");
+                      }
+                    },
                   ),
                   // Call Button
                   _buildActionButton(
-                    icon: Icons.call,
-                    label: "Call",
-                    price: "${data.pricePerCallMinute ?? '50'}/min",
-                    color: Color.fromARGB(
-                        141, 241, 196, 89), // Your original color
-                    onPressed: () {},
-                  ),
+                      icon: Icons.call,
+                      label: "Call",
+                      price: "${data.pricePerCallMinute ?? '50'}/min",
+                      color: data.status == 'busy'
+                          ? Color.fromARGB(141, 243, 21, 21) // Red
+                          : data.status == 'offline'
+                              ? Color.fromARGB(255, 97, 95, 95)
+                              : Color.fromARGB(
+                                  141, 241, 196, 89), // Default (your original)
+
+                      onPressed: () async {
+                        if (data.status == 'offline' || data.status == 'busy') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Astrologer is not available for call')),
+                          );
+                          return;
+                        }
+                        final prefs = await SharedPreferences.getInstance();
+                        final userInfo = prefs.getString(AppConstant.userInfo);
+
+                        if (userInfo == null) {
+                          print("User info not found in preferences.");
+                          // Optionally show login prompt
+                          return;
+                        }
+
+                        final decodedUser = jsonDecode(userInfo);
+                        final String? userId = decodedUser['_id'];
+
+                        if (userId == null || userId.isEmpty) {
+                          print("User ID is missing or empty.");
+                          return;
+                        }
+                        int generateUidFromString(String userId) {
+                          return userId.hashCode &
+                              0x7FFFFFFF; // keep it positive 32-bit int
+                        }
+
+                        final agoraProvider =
+                            Provider.of<AgoraProvider>(context, listen: false);
+                        final String appId = AppConstant.agoraAppId;
+                        final int uid =
+                            generateUidFromString(userId); // or email
+                        final String channelName =
+                            '${userId}_${data.id}_${DateTime.now().millisecondsSinceEpoch}';
+
+                        try {
+                          final AgoraTokenModel tokenModel =
+                              await agoraProvider.fetchToken(
+                                  channelName: channelName,
+                                  uid: uid,
+                                  userId: userId,
+                                  astrologerId: data.id);
+                          final socketProvider = Provider.of<SocketProvider>(
+                              context,
+                              listen: false);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CallScreen(
+                                  appId: AppConstant.agoraAppId,
+                                  channelName: channelName,
+                                  token: tokenModel.token,
+                                  uid: uid,
+                                  avatar: data.avatar,
+                                  name: data.name,
+                                  id: data.id,
+                                  socketProvider: socketProvider),
+                            ),
+                          );
+                        } catch (e) {
+                          print('Error: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to start call')),
+                          );
+                        }
+                      }),
                   // Video Call Button
                   _buildActionButton(
                     icon: Icons.videocam_rounded,
                     label: "Video",
                     price: "${data.pricePerVideoCallMinute ?? '100'}/min",
-                    color: Color.fromARGB(146, 19, 163, 229),
-                    onPressed: () {},
+                    color: data.status == 'busy'
+                        ? const Color.fromARGB(146, 243, 21, 21) // Red for busy
+                        : data.status == 'offline'
+                            ? const Color.fromARGB(
+                                255, 97, 95, 95) // Grey for offline
+                            : const Color.fromARGB(
+                                146, 19, 163, 229), // Blue default
+                    onPressed: () async {
+                      if (data.status == 'offline' || data.status == 'busy') {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text('Astrologer is not available for call')),
+                        );
+                        return;
+                      }
+
+                      final prefs = await SharedPreferences.getInstance();
+                      final userInfo = prefs.getString(AppConstant.userInfo);
+
+                      if (userInfo == null) {
+                        print("User info not found in preferences.");
+                        return;
+                      }
+
+                      final decodedUser = jsonDecode(userInfo);
+                      final String? userId = decodedUser['_id'];
+
+                      if (userId == null || userId.isEmpty) {
+                        print("User ID is missing or empty.");
+                        return;
+                      }
+
+                      int generateUidFromString(String userId) {
+                        return userId.hashCode &
+                            0x7FFFFFFF; // Keep it positive 32-bit int
+                      }
+
+                      final agoraProvider =
+                          Provider.of<AgoraProvider>(context, listen: false);
+                      final socketProvider =
+                          Provider.of<SocketProvider>(context, listen: false);
+                      final int uid = generateUidFromString(userId);
+                      final String channelName =
+                          '${userId}_${data.id}_${DateTime.now().millisecondsSinceEpoch}';
+
+                      try {
+                        final AgoraTokenModel tokenModel =
+                            await agoraProvider.fetchTokenVideoCall(
+                          channelName: channelName,
+                          uid: uid,
+                          userId: userId,
+                          astrologerId: data.id,
+                        );
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PremiumVideoScreen(
+                              appId: AppConstant.agoraAppId,
+                              channelName: channelName,
+                              token: tokenModel.token,
+                              uid: uid,
+                              avatar: data.avatar,
+                              name: data.name,
+                              id: data.id,
+                              socketProvider: socketProvider,
+                            ),
+                          ),
+                        );
+                      } catch (e) {
+                        print('Error: $e');
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Failed to start call')),
+                        );
+                      }
+                    },
                   ),
                 ],
               ),

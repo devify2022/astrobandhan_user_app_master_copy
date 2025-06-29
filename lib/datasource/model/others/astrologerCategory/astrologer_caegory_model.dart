@@ -1,30 +1,20 @@
 class AstrologerCategory {
+  final String id;
   final String name;
+  final List<String> astrologers; // Store astrologer IDs if needed
 
-  AstrologerCategory({required this.name});
+  AstrologerCategory({
+    required this.id,
+    required this.name,
+    required this.astrologers,
+  });
 
   factory AstrologerCategory.fromJson(Map<String, dynamic> json) {
     return AstrologerCategory(
-      name: json['name'] ?? 'Unnamed Category', // Fallback if null
-    );
-  }
-}
-
-class CategoryResponse {
-  final List<AstrologerCategory> categories;
-  final String message;
-
-  CategoryResponse({
-    required this.categories,
-    required this.message,
-  });
-
-  factory CategoryResponse.fromJson(Map<String, dynamic> json) {
-    return CategoryResponse(
-      categories: (json['data'] as List)
-          .map((category) => AstrologerCategory.fromJson(category))
-          .toList(),
-      message: json['message'] ?? 'No message',
+      id: json['_id'] ?? '', // Handle potential null
+      name: json['name'] ?? 'Unnamed Category',
+      astrologers: List<String>.from(
+          json['astrologers'] ?? []), // Convert astrologer IDs
     );
   }
 }

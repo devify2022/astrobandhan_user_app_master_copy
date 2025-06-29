@@ -293,6 +293,13 @@ class Helper {
         builder: (BuildContext context) => screen));
   }
 
+  static void navigateTo(Widget screen) {
+    navigatorKey.currentState?.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => screen),
+      (Route<dynamic> route) => false, // removes all previous routes
+    );
+  }
+
   static void pushRemoveScreen(BuildContext context, Widget screen) {
     Navigator.of(context).pushAndRemoveUntil(
       SwipeablePageRoute(

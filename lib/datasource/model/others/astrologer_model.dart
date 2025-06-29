@@ -2,7 +2,7 @@ class AstrologerModel {
   final String id;
   final String name;
   final int experience;
-  final int rating;
+  final double rating;
   final List<String> specialities;
   final String avatar;
   final double pricePerCallMinute;
@@ -73,7 +73,7 @@ class AstrologerModel {
       name: json['name'] ?? '',
       status: json['status'] ?? '',
       experience: json['experience'] ?? 0,
-      rating: json['rating'] ?? 0,
+     rating: json['rating'] != null ? double.tryParse(json['rating'].toString()) ?? 0.0 : 0.0,
       specialities: List<String>.from(json['specialities'] ?? []),
       avatar: json['avatar'] ?? '',
       pricePerCallMinute: (json['pricePerCallMinute'] ?? 0).toDouble(),

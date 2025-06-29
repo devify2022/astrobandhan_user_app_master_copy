@@ -8,7 +8,8 @@ import 'package:astrobandhan/datasource/model/others/top_astrologer_model.dart';
 
 class HomeProvider extends ChangeNotifier {
   final HomeRepo homeRepo;
-
+  bool isCategoryLoading = false;
+  String? currentCategoryId;
   HomeProvider({required this.homeRepo});
 
   bool isLoading = false;
@@ -19,6 +20,38 @@ class HomeProvider extends ChangeNotifier {
   List<AstrologerModel> astrologers = [];
   int page = 1;
   bool hasNextData = false;
+
+  Future<void> getAstrologersByCategory(String categoryId) async {
+    try {
+      isCategoryLoading = true;
+      currentCategoryId = categoryId;
+      notifyListeners();
+
+      final apiResponse = await homeRepo.getAstrologerByCategory(categoryId);
+      print("API Response3: ${apiResponse.response?.data}");
+      if (apiResponse.response?.statusCode == 200) {
+        astrologers.clear(); // Clear existing list
+        final responseData = apiResponse.response?.data;
+
+        // Parse astrologers from response
+        astrologers = (responseData['astrologers'] as List?)
+                ?.map((e) => AstrologerModel.fromJson(e))
+                .toList() ??
+            [];
+      } else {
+        showToastMessage(
+            apiResponse.error?.message ?? 'Failed to load astrologers');
+        astrologers.clear(); // Clear list on error
+      }
+    } catch (e) {
+      showToastMessage('An error occurred while loading astrologers');
+      debugPrint('Error in getAstrologersByCategory: $e');
+      astrologers.clear(); // Clear list on error
+    } finally {
+      isCategoryLoading = false;
+      notifyListeners();
+    }
+  }
 
   getAstrologers({int page = 1, bool isFirstTime = false}) async {
     if (page == 1) {
@@ -36,6 +69,8 @@ class HomeProvider extends ChangeNotifier {
     ApiResponse apiResponse = await homeRepo.getAstrologer(page);
     bottomLoading = false;
     isLoading = false;
+    print("Page: $page");
+    print("response for all astrologers: $apiResponse");
     var astrologersRes = apiResponse.response.data['data']['astrologers'];
     print(astrologersRes);
     if (apiResponse.response.statusCode == 200) {
@@ -58,7 +93,6 @@ class HomeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  
   List<AstrologerModel> aiAstrologers = [];
   bool aiLoading = false;
 

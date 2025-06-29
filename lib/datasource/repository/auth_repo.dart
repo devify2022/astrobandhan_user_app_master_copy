@@ -23,9 +23,11 @@ class AuthRepo {
       final cloudName = 'dlol2hjj8';
       final uploadPreset = 'chatting';
       final fileName = imageFile.path.split('/').last;
-      final String url = 'https://api.cloudinary.com/v1_1/$cloudName/image/upload';
+      final String url =
+          'https://api.cloudinary.com/v1_1/$cloudName/image/upload';
       FormData formData = FormData.fromMap({
-        "file": await MultipartFile.fromFile(imageFile.path, filename: fileName),
+        "file":
+            await MultipartFile.fromFile(imageFile.path, filename: fileName),
         "upload_preset": uploadPreset,
       });
       response = await Dio().post(url, data: formData);
@@ -35,11 +37,20 @@ class AuthRepo {
     }
   }
 
-  Future<ApiResponse> signUp(String name, String email, String phone, String dob, String gender, String timeOfBirth, String placeOfBirth,
-      String password, String image) async {
+  Future<ApiResponse> signUp(
+      String name,
+      String email,
+      String phone,
+      String dob,
+      String gender,
+      String timeOfBirth,
+      String placeOfBirth,
+      String password,
+      String image) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.post('${AppConstant.baseUrl}astrobandhan/v1/user/signup', data: {
+      response = await dioClient
+          .post('${AppConstant.baseUrl}astrobandhan/v1/user/signup', data: {
         "photo": image,
         "name": name,
         "email": email,
@@ -60,7 +71,8 @@ class AuthRepo {
   Future<ApiResponse> verifyOTP(String email, String otp) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.post(AppConstant.verifyOTPURI, data: {"username": email, "otp": otp});
+      response = await dioClient.post(AppConstant.verifyOTPURI,
+          data: {"username": email, "otp": otp});
       return ApiResponse.withSuccess(response);
     } catch (e) {
       print('shvo ${e.toString()}');
@@ -71,10 +83,16 @@ class AuthRepo {
   Future<ApiResponse> resendOTP() async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      var header = {'accept': 'application/json', 'Authorization': 'Bearer ${sharedPreferences.getString(AppConstant.token)}'};
+      var header = {
+        'accept': 'application/json',
+        'Authorization':
+            'Bearer ${sharedPreferences.getString(AppConstant.token)}'
+      };
       print(header);
 
-      response = await Dio().post('${AppConstant.baseUrl}${AppConstant.resendOTPURI}', options: Options(headers: header));
+      response = await Dio().post(
+          '${AppConstant.baseUrl}${AppConstant.resendOTPURI}',
+          options: Options(headers: header));
       return ApiResponse.withSuccess(response);
     } catch (e) {
       print(e.toString());
@@ -88,7 +106,8 @@ class AuthRepo {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
       print(AppConstant.loginWithOtp);
-      response = await dioClient.post(AppConstant.loginWithOtp, data: {"phone": phone, "role": "user"});
+      response = await dioClient.post(AppConstant.loginWithOtp,
+          data: {"phone": phone, "role": "user"});
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -96,11 +115,16 @@ class AuthRepo {
     }
   }
 
-  Future<ApiResponse> otpValidation(String phone, String pin, String verificationId) async {
+  Future<ApiResponse> otpValidation(
+      String phone, String pin, String verificationId) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
       print(AppConstant.otpValidation);
-      response = await dioClient.post(AppConstant.otpValidation, data: {"phone": phone, "verificationId": verificationId, "code": pin});
+      response = await dioClient.post(AppConstant.otpValidation, data: {
+        "phone": phone,
+        "verificationId": verificationId,
+        "code": pin
+      });
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -115,7 +139,8 @@ class AuthRepo {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
       print(AppConstant.updatePassword);
-      response = await dioClient.post(AppConstant.updatePassword, data: {"phone": phone, "newPassword": password});
+      response = await dioClient.post(AppConstant.updatePassword,
+          data: {"phone": phone, "newPassword": password});
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -126,8 +151,9 @@ class AuthRepo {
   Future<ApiResponse> signIn(String phone, String password) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.post(AppConstant.login, data: {"phone": phone, "password": password});
-
+      response = await dioClient.post(AppConstant.login,
+          data: {"phone": phone, "password": password});
+      print(response.data);
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
@@ -138,8 +164,10 @@ class AuthRepo {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
 
     try {
-      response = await dioClient.post('${AppConstant.baseUrl}${AppConstant.loginBySocial}',
-          options: Options(headers: {"device-id": deviceId ?? ''}), data: map);
+      response = await dioClient.post(
+          '${AppConstant.baseUrl}${AppConstant.loginBySocial}',
+          options: Options(headers: {"device-id": deviceId ?? ''}),
+          data: map);
 
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -147,43 +175,38 @@ class AuthRepo {
     }
   }
 
-  Future<ApiResponse> forgotPassword(String emailAddress, {String? deviceId}) async {
+  Future<ApiResponse> forgotPassword(String emailAddress,
+      {String? deviceId}) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient
-          .post(AppConstant.forgotPasswordURI, options: Options(headers: {"device-id": deviceId ?? ''}), data: {"email": emailAddress});
+      response = await dioClient.post(AppConstant.forgotPasswordURI,
+          options: Options(headers: {"device-id": deviceId ?? ''}),
+          data: {"email": emailAddress});
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
     }
   }
 
-  Future<ApiResponse> forgotPasswordWhatsApp(String whatsAppNumber, {String? deviceId}) async {
+  Future<ApiResponse> forgotPasswordWhatsApp(String whatsAppNumber,
+      {String? deviceId}) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     print(whatsAppNumber);
     try {
-      response = await dioClient
-          .post(AppConstant.forgotPasswordWhatsappURI, options: Options(headers: {"device-id": deviceId ?? ''}), data: {"mobile": whatsAppNumber});
+      response = await dioClient.post(AppConstant.forgotPasswordWhatsappURI,
+          options: Options(headers: {"device-id": deviceId ?? ''}),
+          data: {"mobile": whatsAppNumber});
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
     }
   }
 
-  Future<ApiResponse> resetPasswordWhatsApp(Map<String, dynamic> data, {String? deviceId}) async {
+  Future<ApiResponse> resetPasswordWhatsApp(Map<String, dynamic> data,
+      {String? deviceId}) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.post(AppConstant.resetPasswordWhatsappURI, options: Options(headers: {"device-id": deviceId ?? ''}), data: data);
-      return ApiResponse.withSuccess(response);
-    } catch (e) {
-      return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
-    }
-  }
-
-  Future<ApiResponse> resetPasswordByEmail(Map<String, dynamic> data, {String? deviceId}) async {
-    Response response = Response(requestOptions: RequestOptions(path: '22222'));
-    try {
-      response = await dioClient.post(AppConstant.baseUrl + AppConstant.resetPasswordByEmailURI,
+      response = await dioClient.post(AppConstant.resetPasswordWhatsappURI,
           options: Options(headers: {"device-id": deviceId ?? ''}), data: data);
       return ApiResponse.withSuccess(response);
     } catch (e) {
@@ -191,11 +214,29 @@ class AuthRepo {
     }
   }
 
-  Future<ApiResponse> refreshToken(String refreshToken, {String? deviceId}) async {
+  Future<ApiResponse> resetPasswordByEmail(Map<String, dynamic> data,
+      {String? deviceId}) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response =
-          await dioClient.post(AppConstant.refreshTokenURI, options: Options(headers: {"device-id": deviceId ?? '', "refresh-token": refreshToken}));
+      response = await dioClient.post(
+          AppConstant.baseUrl + AppConstant.resetPasswordByEmailURI,
+          options: Options(headers: {"device-id": deviceId ?? ''}),
+          data: data);
+      return ApiResponse.withSuccess(response);
+    } catch (e) {
+      return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
+    }
+  }
+
+  Future<ApiResponse> refreshToken(String refreshToken,
+      {String? deviceId}) async {
+    Response response = Response(requestOptions: RequestOptions(path: '22222'));
+    try {
+      response = await dioClient.post(AppConstant.refreshTokenURI,
+          options: Options(headers: {
+            "device-id": deviceId ?? '',
+            "refresh-token": refreshToken
+          }));
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
@@ -205,7 +246,8 @@ class AuthRepo {
   Future<ApiResponse> guestLogin({String? deviceId}) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.post(AppConstant.guestLogin, options: Options(headers: {"device-id": deviceId ?? ''}));
+      response = await dioClient.post(AppConstant.guestLogin,
+          options: Options(headers: {"device-id": deviceId ?? ''}));
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
@@ -236,10 +278,13 @@ class AuthRepo {
   }
 
 //Change Password
-  Future<ApiResponse> changePassword(String old, String password, BuildContext context) async {
+  Future<ApiResponse> changePassword(
+      String old, String password, BuildContext context) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.put('${AppConstant.baseUrl}${AppConstant.changePassword}', data: {"old": old, "password": password});
+      response = await dioClient.put(
+          '${AppConstant.baseUrl}${AppConstant.changePassword}',
+          data: {"old": old, "password": password});
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
@@ -247,11 +292,17 @@ class AuthRepo {
   }
 
   //Change Password
-  Future<ApiResponse> changeProfile(String firstname, String lastname, String email, String mobile) async {
+  Future<ApiResponse> changeProfile(
+      String firstname, String lastname, String email, String mobile) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.put('${AppConstant.baseUrl}${AppConstant.changeProfile}',
-          data: {"firstname": firstname, "lastname": lastname, "email": email, "mobile": mobile});
+      response = await dioClient
+          .put('${AppConstant.baseUrl}${AppConstant.changeProfile}', data: {
+        "firstname": firstname,
+        "lastname": lastname,
+        "email": email,
+        "mobile": mobile
+      });
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
@@ -262,7 +313,9 @@ class AuthRepo {
   Future<ApiResponse> changeName(String firstname, String lastname) async {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
-      response = await dioClient.put('${AppConstant.baseUrl}${AppConstant.changeUserName}', data: {"firstname": firstname, "lastname": lastname});
+      response = await dioClient.put(
+          '${AppConstant.baseUrl}${AppConstant.changeUserName}',
+          data: {"firstname": firstname, "lastname": lastname});
       return ApiResponse.withSuccess(response);
     } catch (e) {
       return ApiResponse.withError(ApiErrorHandler.getMessage(e), response);
@@ -273,9 +326,14 @@ class AuthRepo {
     Response response = Response(requestOptions: RequestOptions(path: '22222'));
     try {
       String fileName = file.path.split('/').last;
-      final data = FormData.fromMap({"file": await MultipartFile.fromFile(file.path, filename: fileName), "isPublic": true});
+      final data = FormData.fromMap({
+        "file": await MultipartFile.fromFile(file.path, filename: fileName),
+        "isPublic": true
+      });
 
-      response = await dioClient.post('${AppConstant.baseUrl}${AppConstant.pdfUploadURI}', data: data);
+      response = await dioClient.post(
+          '${AppConstant.baseUrl}${AppConstant.pdfUploadURI}',
+          data: data);
       return ApiResponse.withSuccess(response);
     } catch (e) {
       print(e.toString());
@@ -285,7 +343,8 @@ class AuthRepo {
 
   Future<void> saveUserInfo(LoginUserModel userInfo) async {
     try {
-      await sharedPreferences.setString(AppConstant.userInfo, jsonEncode(userInfo.toJson()));
+      await sharedPreferences.setString(
+          AppConstant.userInfo, jsonEncode(userInfo.toJson()));
     } catch (e) {
       rethrow;
     }
@@ -304,7 +363,10 @@ class AuthRepo {
   // for  user token
   Future<void> saveUserToken(String token) async {
     dioClient.token = token;
-    dioClient.dio.options.headers = {'Content-Type': 'application/json', 'Authorization': 'Bearer $token'};
+    dioClient.dio.options.headers = {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer $token'
+    };
 
     try {
       await sharedPreferences.setString(AppConstant.token, token);

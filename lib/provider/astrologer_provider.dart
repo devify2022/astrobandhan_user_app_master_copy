@@ -87,17 +87,20 @@ class AstrologerProvider extends ChangeNotifier {
   void getAstrologerCategories() async {
     try {
       aiLoading = true;
-      notifyListeners(); // Notify for loading state
+      notifyListeners();
 
       final apiResponse = await astrologerRepo.getAstrologerCategories();
+      print("API2 Response: ${apiResponse.response?.data}");
 
       if (apiResponse.response?.statusCode == 200) {
-        categories.clear(); // Clear existing data before adding new
+        categories.clear();
+
         if (apiResponse.response?.data['data'] != null &&
             apiResponse.response!.data['data'].isNotEmpty) {
-          for (var element in apiResponse.response!.data['data']) {
-            categories.add(AstrologerCategory.fromJson(element));
-          }
+          // Use map to convert all items at once
+          categories = (apiResponse.response!.data['data'] as List)
+              .map((element) => AstrologerCategory.fromJson(element))
+              .toList();
         }
       } else {
         final errorMsg =
@@ -109,7 +112,7 @@ class AstrologerProvider extends ChangeNotifier {
       debugPrint('Error fetching categories: $e');
     } finally {
       aiLoading = false;
-      notifyListeners(); // Notify when complete
+      notifyListeners();
     }
   }
 }

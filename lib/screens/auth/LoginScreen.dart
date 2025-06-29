@@ -4,6 +4,7 @@ import 'package:astrobandhan/screens/auth/create_account.dart';
 import 'package:astrobandhan/screens/auth/forget_password.dart';
 import 'package:astrobandhan/screens/auth/login_with_otp_screen.dart';
 import 'package:astrobandhan/screens/dashboard/dashboard_screen.dart';
+import 'package:astrobandhan/screens/splash/splash.dart';
 import 'package:astrobandhan/utils/images.dart';
 import 'package:astrobandhan/widgets/custom_app_bar_widget.dart';
 import 'package:astrobandhan/widgets/custom_button.dart';
@@ -12,13 +13,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController phoneController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final FocusNode phoneFocusNode = FocusNode();
   final FocusNode passwordFocusNode = FocusNode();
 
-  LoginScreen({super.key});
+  @override
+  void dispose() {
+    phoneController.dispose();
+    passwordController.dispose();
+    phoneFocusNode.dispose();
+    passwordFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +53,7 @@ class LoginScreen extends StatelessWidget {
                     // Navigate to DashboardScreen when back button is pressed
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => DashboardScreen()),
+                      MaterialPageRoute(builder: (context) => SplashScreen()),
                     );
                   },
                 ),
@@ -174,6 +188,8 @@ class LoginScreen extends StatelessWidget {
                                                 context, DashboardScreen());
                                           }
                                         });
+                                        print(
+                                            'Phone: ${passwordController.text}');
                                       },
                                       text: 'LOGIN');
                                 }),

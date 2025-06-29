@@ -1,11 +1,20 @@
+import 'dart:convert';
+
+import 'package:astrobandhan/datasource/model/call/agoraTokenModel.dart';
 import 'package:astrobandhan/helper/Modal/addReview/addReview_modal.dart';
 import 'package:astrobandhan/helper/helper.dart';
+import 'package:astrobandhan/provider/agora_provider.dart';
 import 'package:astrobandhan/provider/astrologer_provider.dart';
+import 'package:astrobandhan/provider/socket_provider.dart';
 import 'package:astrobandhan/provider/user_provider.dart';
+import 'package:astrobandhan/screens/call/call_screen.dart';
+import 'package:astrobandhan/screens/chat/chat_room_screen.dart';
 import 'package:astrobandhan/utils/app_colors.dart';
+import 'package:astrobandhan/utils/app_constant.dart';
 import 'package:astrobandhan/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../helper/Modal/gift/gift_modal.dart';
 
 class AstrologerDetailScreen extends StatefulWidget {
@@ -218,14 +227,80 @@ class _AstrologerDetailScreenState extends State<AstrologerDetailScreen> {
                       SizedBox(
                         height: 46,
                         child: ElevatedButton(
-                          onPressed: astrologer?['status'] == 'available'
-                              ? () {
-                                  // Navigate to chat screen
-                                }
-                              : () {
-                                  showToastMessage(
-                                      'Astrologer is currently ${astrologer?['status']}');
-                                },
+                          onPressed: () async {
+                            if (astrologer?['status'] == 'busy') {
+                              showToastMessage(
+                                  "Astrologer is busy, please try again later.");
+                              return;
+                            } else if (astrologer?['status'] == 'offline') {
+                              showToastMessage(
+                                  "Astrologer is offline. We'll notify you when they're available.");
+                              return;
+                            } else if (astrologer?['status'] != 'available') {
+                              showToastMessage(
+                                  'Astrologer is currently ${astrologer?['status']}');
+                              return;
+                            }
+
+                            try {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final userInfo =
+                                  prefs.getString(AppConstant.userInfo);
+
+                              if (userInfo == null) {
+                                print("User info not found in preferences.");
+                                // Optionally show login prompt
+                                return;
+                              }
+
+                              final decodedUser = jsonDecode(userInfo);
+                              final String? userId = decodedUser['_id'];
+
+                              if (userId == null || userId.isEmpty) {
+                                print("User ID is missing or empty.");
+                                return;
+                              }
+
+                              final String? astrologerId = astrologer?['_id'];
+                              const chatType = "text";
+
+                              if (astrologerId == null ||
+                                  astrologerId.isEmpty) {
+                                print("Astrologer ID is missing.");
+                                return;
+                              }
+
+                              final socketProvider =
+                                  Provider.of<SocketProvider>(context,
+                                      listen: false);
+                              final chatRoomModel =
+                                  socketProvider.chatRoomModel;
+                              if (chatRoomModel != null) {
+                                showToastMessage(
+                                    "Please cancel your ongoing chat first.");
+                                return;
+                              }
+
+                              socketProvider.emitRequestChat(
+                                  userId, astrologerId, chatType);
+                              showToastMessage(
+                                  "Chat request sent successfully!",
+                                  isError: false);
+
+                              await Future.delayed(const Duration(seconds: 3));
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ChatRoomScreen(),
+                                ),
+                              );
+                            } catch (e) {
+                              print("Error in onPressed: $e");
+                              showToastMessage(
+                                  "Something went wrong. Please try again.");
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 astrologer?['status'] == 'available'
@@ -253,17 +328,86 @@ class _AstrologerDetailScreenState extends State<AstrologerDetailScreen> {
                           width: 12), // ⬅️ Horizontal space between buttons
 
                       // Call Button
+                      // Call Button
                       SizedBox(
                         height: 46,
                         child: ElevatedButton(
-                          onPressed: astrologer?['status'] == 'available'
-                              ? () {
-                                  // Navigate to chat screen
-                                }
-                              : () {
-                                  showToastMessage(
-                                      'Astrologer is currently ${astrologer?['status']}');
-                                },
+                          onPressed: () async {
+                            if (astrologer?['status'] == 'offline' ||
+                                astrologer?['status'] == 'busy') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Astrologer is not available for call')),
+                              );
+                              return;
+                            }
+
+                            final prefs = await SharedPreferences.getInstance();
+                            final userInfo =
+                                prefs.getString(AppConstant.userInfo);
+
+                            if (userInfo == null) {
+                              print("User info not found in preferences.");
+                              return;
+                            }
+
+                            final decodedUser = jsonDecode(userInfo);
+                            final String? userId = decodedUser['_id'];
+
+                            if (userId == null || userId.isEmpty) {
+                              print("User ID is missing or empty.");
+                              return;
+                            }
+
+                            int generateUidFromString(String userId) {
+                              return userId.hashCode &
+                                  0x7FFFFFFF; // keep it positive
+                            }
+
+                            final agoraProvider = Provider.of<AgoraProvider>(
+                                context,
+                                listen: false);
+                            final socketProvider = Provider.of<SocketProvider>(
+                                context,
+                                listen: false);
+
+                            final int uid = generateUidFromString(userId);
+                            final String channelName =
+                                '${userId}_${astrologer!['_id']}_${DateTime.now().millisecondsSinceEpoch}';
+
+                            try {
+                              final AgoraTokenModel tokenModel =
+                                  await agoraProvider.fetchToken(
+                                channelName: channelName,
+                                uid: uid,
+                                userId: userId,
+                                astrologerId: astrologer['_id'],
+                              );
+
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CallScreen(
+                                    appId: AppConstant.agoraAppId,
+                                    channelName: channelName,
+                                    token: tokenModel.token,
+                                    uid: uid,
+                                    avatar: astrologer['avatar'],
+                                    name: astrologer['name'],
+                                    id: astrologer['_id'],
+                                    socketProvider: socketProvider,
+                                  ),
+                                ),
+                              );
+                            } catch (e) {
+                              print('Error: $e');
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Failed to start call')),
+                              );
+                            }
+                          },
                           style: ElevatedButton.styleFrom(
                             backgroundColor:
                                 astrologer?['status'] == 'available'
@@ -287,6 +431,7 @@ class _AstrologerDetailScreenState extends State<AstrologerDetailScreen> {
                           ),
                         ),
                       ),
+
                       const SizedBox(
                           width: 12), // ⬅️ Horizontal space between buttons
 

@@ -1,10 +1,12 @@
 import 'dart:ui';
 import 'package:astrobandhan/datasource/model/auth/user_model.dart';
 import 'package:astrobandhan/screens/astromall/astromall.dart';
+import 'package:astrobandhan/screens/dashboard/dashboard_screen.dart';
 import 'package:astrobandhan/screens/history/history_screen.dart';
 import 'package:astrobandhan/helper/helper.dart';
 import 'package:astrobandhan/provider/home_provider.dart';
 import 'package:astrobandhan/screens/auth/LoginScreen.dart';
+import 'package:astrobandhan/screens/splash/splash.dart';
 import 'package:astrobandhan/utils/app_constant.dart';
 import 'package:astrobandhan/utils/images.dart';
 import 'package:astrobandhan/utils/text.styles.dart';
@@ -180,12 +182,16 @@ class _CustomDrawerState extends State<CustomDrawer> {
                       onTap: () async {
                         Navigator.pop(context);
                         final prefs = await SharedPreferences.getInstance();
-                        await prefs.remove(AppConstant.userInfo);
-                        await prefs.remove(AppConstant.token);
-                        Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => LoginScreen()));
+                        await prefs
+                            .clear(); // Use clear() instead of individual removes for clean slate
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => SplashScreen()),
+                          (route) => false, // Clear all previous routes
+                        );
+// Ensure no other dynamic routing or redundant operations here
                         // Implement share functionality
                       },
                     ),

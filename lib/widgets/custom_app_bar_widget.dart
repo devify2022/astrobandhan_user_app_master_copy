@@ -10,7 +10,11 @@ class AppBarWidget extends StatelessWidget {
   final VoidCallback? onBackPressed;
   final bool textAlignCenter;
 
-  const AppBarWidget({super.key, required this.title, this.onBackPressed, this.textAlignCenter = false});
+  const AppBarWidget(
+      {super.key,
+      required this.title,
+      this.onBackPressed,
+      this.textAlignCenter = false});
 
   @override
   Widget build(BuildContext context) {
@@ -28,24 +32,34 @@ class AppBarWidget extends StatelessWidget {
         ),
         textAlignCenter ? SizedBox(width: 10) : spaceWeight10,
         Expanded(
-            child: Text(title, style: poppinsStyle500Medium.copyWith(fontSize: 18), textAlign: textAlignCenter ? TextAlign.center : TextAlign.start)),
+            child: Text(title,
+                style: poppinsStyle500Medium.copyWith(fontSize: 18),
+                textAlign:
+                    textAlignCenter ? TextAlign.center : TextAlign.start)),
         const SizedBox(width: 20),
       ],
     );
   }
 }
 
-class CustomAppBarWidget extends StatelessWidget implements PreferredSizeWidget {
+class CustomAppBarWidget extends StatelessWidget
+    implements PreferredSizeWidget {
   final String title;
   final VoidCallback? onBackPressed;
   final bool textAlignCenter;
 
-  const CustomAppBarWidget({super.key, required this.title, this.onBackPressed, this.textAlignCenter = false});
+  const CustomAppBarWidget(
+      {super.key,
+      required this.title,
+      this.onBackPressed,
+      this.textAlignCenter = false});
 
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(statusBarColor: Color(0xff0f0f60), statusBarIconBrightness: Brightness.light),
+      value: const SystemUiOverlayStyle(
+          statusBarColor: Color(0xff0f0f60),
+          statusBarIconBrightness: Brightness.light),
       sized: true,
       child: AppBar(
         elevation: 0,
@@ -67,5 +81,4 @@ class CustomAppBarWidget extends StatelessWidget implements PreferredSizeWidget 
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-
 }

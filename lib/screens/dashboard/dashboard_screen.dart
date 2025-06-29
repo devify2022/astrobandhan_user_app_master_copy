@@ -1,7 +1,10 @@
 import 'dart:ui';
 
+import 'package:astrobandhan/Service/SocketService.dart';
+import 'package:astrobandhan/helper/Chat_Overlay_button_widget.dart';
 import 'package:astrobandhan/helper/helper.dart';
 import 'package:astrobandhan/provider/dashboard_provider.dart';
+import 'package:astrobandhan/provider/socket_provider.dart';
 import 'package:astrobandhan/screens/ai/ai_astro_screen.dart';
 import 'package:astrobandhan/screens/astrologer/astrologer_screen.dart';
 import 'package:astrobandhan/screens/dashboard/widget/drawer.dart';
@@ -13,6 +16,8 @@ import 'package:astrobandhan/utils/text.styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -34,11 +39,57 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
+  @override
   void initState() {
-    // TODO: implement initState
     super.initState();
+
     providerHome.getAstrologers(isFirstTime: true);
     providerHome.getUserDetails();
+
+    // Post frame ensures PageView is mounted
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final dashboardProvider =
+          Provider.of<DashboardProvider>(context, listen: false);
+      dashboardProvider
+          .setCurrentIndex(0); // This internally calls jumpToPage(0)
+
+      final userId = providerHome.homeRepo.authRepo.getUserInfoData()?.id;
+      if (userId != null && userId.isNotEmpty) {
+        print('Initializing socket for user: $userId');
+        Provider.of<SocketProvider>(context, listen: false)
+            .initializeSocket(userId);
+      }
+    });
+
+    _initializeAsyncTasks();
+  }
+
+  Future<void> _initializeAsyncTasks() async {
+    // Request Camera and Storage permissions
+    await _requestPermissions();
+    OneSignal.Notifications.requestPermission(true);
+    // Initialize socket after the first frame
+  }
+
+  Future<void> _requestPermissions() async {
+    // Request permissions for camera, storage, and gallery
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.camera,
+      Permission.storage,
+      Permission.photos,
+    ].request();
+
+    // Check if all permissions are granted
+    bool isCameraGranted = statuses[Permission.camera]?.isGranted ?? false;
+    bool isStorageGranted = statuses[Permission.storage]?.isGranted ?? false;
+    bool isPhotosGranted = statuses[Permission.photos]?.isGranted ?? false;
+
+    if (isCameraGranted && isStorageGranted && isPhotosGranted) {
+      print("All permissions granted!");
+      // Proceed with your logic to open the camera or gallery
+    } else {
+      print("Some permissions are denied. Please enable them in the settings.");
+    }
   }
 
   @override
@@ -58,7 +109,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onPressed: () {
                   _scaffoldKey.currentState?.openDrawer();
                 }),
-            title: Text('Astro Bandhan',
+            title: Text('Rudra Ganga',
                 style: interStyle700Bold.copyWith(fontSize: 18)),
             centerTitle: true,
             actions: [
@@ -82,14 +133,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
           drawer: CustomDrawer(),
-          body: Consumer<DashboardProvider>(
-              builder: (context, dashboardProvider, child) => PageView.builder(
-                  itemCount: _screens.length,
-                  controller: dashboardProvider.pageController,
-                  onPageChanged: dashboardProvider.setCurrentIndex,
-                  itemBuilder: (context, index) {
-                    return _screens[index];
-                  })),
+          body: Stack(
+            children: [
+              // PageView.builder with proper consumer for DashboardProvider
+              Consumer<DashboardProvider>(
+                builder: (context, dashboardProvider, child) {
+                  return PageView.builder(
+                    itemCount: _screens.length,
+                    controller: dashboardProvider.pageController,
+                    onPageChanged: dashboardProvider.setCurrentIndex,
+                    itemBuilder: (context, index) {
+                      return _screens[index];
+                    },
+                  );
+                },
+              ),
+
+              // Visibility widget wrapped with correct Positioned layout
+              Consumer<SocketProvider>(
+                builder: (context, socketProvider, child) {
+                  return Visibility(
+                    visible: socketProvider.isButtonVisible,
+                    child: OverlayButtonWidget(),
+                  );
+                },
+              ),
+            ],
+          ),
           bottomNavigationBar: Consumer<DashboardProvider>(
               builder: (context, dashBoardProvider, child) => Container(
                     height: 80,
@@ -145,7 +215,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             buildBottomNavigationBarItem(ImageResources.home,
                                 'Home', 0, dashBoardProvider.currentIndex),
                             buildBottomNavigationBarItem(ImageResources.ai,
-                                'Ai Astro', 1, dashBoardProvider.currentIndex),
+                                'Astro', 1, dashBoardProvider.currentIndex),
                             buildBottomNavigationBarItem(ImageResources.live,
                                 'Live', 2, dashBoardProvider.currentIndex),
                             buildBottomNavigationBarItem(ImageResources.ask,
